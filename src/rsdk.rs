@@ -32,11 +32,12 @@ pub struct RSDKInfo {
     pub name: Game,
     pub path: PathBuf,
     pub mods: Vec<ModInfo>,
+    pub legacy: bool
 }
 
 impl Default for RSDKInfo {
     fn default() -> Self {
-        Self { rsdk_revision: 4, name: Game::None , path: PathBuf::new(), mods: Vec::<ModInfo>::new()}
+        Self { rsdk_revision: 4, name: Game::None , path: PathBuf::new(), mods: Vec::<ModInfo>::new(), legacy: false }
     }
 }
 
@@ -62,6 +63,10 @@ impl RSDKInfo {
                     _ => {}
                 };
             }
+        }
+
+        if result.rsdk_revision == 5 && result.name != Game::SonicMania {
+            result.legacy = true;
         }
     
         result.mods = result.get_mods()?;
