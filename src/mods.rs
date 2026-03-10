@@ -1,184 +1,118 @@
-// use eframe::egui::{self, Id};
+use crate::{rsdk::{RSDKInfo, ModInfo}, ui::{Message, Tab}};
+use iced::{
+    Alignment, Element, font, widget::{Column, Container, button}
+};
+use iced_aw::tab_bar::TabLabel;
+use iced::widget::{
+    center_x, center_y, column, container, scrollable, table, text
+};
+use iced::Font;
 
-// use crate::rsdk;
-
-// #[derive(PartialEq)]
-// pub struct ModTable {
-//     clickable: bool,
-// }
-
-// impl Default for ModTable {
-//     fn default() -> Self {
-//         Self {
-//             clickable: true,
-//         }
-//     }
-// }
-
-// impl ModTable {
-//     fn ui(&mut self, ui: &mut egui::Ui) {
-//         egui::SidePanel::left(Id::new("mods_list")).show(ui.ctx(), |ui| {
-//             self.table_ui(ui, rsdk::read_ini(String::from("/home/mariomastr/Applications/RSDK/Sonic 1/")).unwrap());
-//         });
-//     }
-
-//     fn table_ui(&mut self, ui: &mut egui::Ui, mods: Vec<rsdk::ModInfo>) {
-//         use egui_extras::{Column, TableBuilder};
-
-//         let text_height = egui::TextStyle::Body
-//             .resolve(ui.style())
-//             .size
-//             .max(ui.spacing().interact_size.y);
-//         let mut table = TableBuilder::new(ui)
-//             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-//             .column(Column::auto())
-//             .column(Column::auto())
-//             .column(Column::auto())
-//             .min_scrolled_height(0.0);
-
-//         if self.clickable {
-//             table = table.sense(egui::Sense::click());
-//         }
-
-//         table.header(20.0, |mut header| {
-//             header.col(|ui| {
-//                 ui.strong("Name");
-//             });
-//             header.col(|ui| {
-//                 ui.strong("Author");
-//             });
-//             header.col(|ui| {
-//                 ui.strong("Version");
-//             });
-//         }).body(|mut body| {
-//             for mi in mods {
-//                 body.row(text_height, |mut row| {
-//                     row.col(|ui| {
-//                         ui.label(mi.name);
-//                     });
-//                     row.col(|ui| {
-//                         ui.label(mi.author);
-//                     });
-//                     row.col(|ui| {
-//                         ui.label(mi.version);
-//                     });
-//                 });
-//             }
-//         });
-//     }
-// }
-
-// #[derive(PartialEq)]
-// pub struct Mods {
-//     table: ModTable,
-// }
-
-// impl Default for Mods {
-//     fn default() -> Self {
-//         Self {
-//             table: ModTable::default()
-//         }
-//     }
-// }
-
-// impl Mods {
-//     pub fn ui(&mut self, ui: &mut egui::Ui) {
-//         ui.separator();
-//         egui::CentralPanel::default().show(ui.ctx(), |ui| {
-//             self.table.ui(ui);
-//         });
-//     }
-// }
-
-use crate::{Settings, rsdk};
-use eframe::egui;
-
-#[derive(PartialEq)]
-pub struct ModTable {
-    clickable: bool,
-    resizable: bool,
-    striped: bool,
+#[derive(PartialEq, Default)]
+pub struct ModsTab {
+    game: RSDKInfo,
 }
 
-impl Default for ModTable {
-    fn default() -> Self {
+#[derive(Debug, Clone)]
+pub enum ModsMessage {
+    EnableAll,
+    DisableAll,
+    Checkbox(bool),
+    Save
+}
+
+impl ModsTab {
+    pub fn new() -> Self {
         Self {
-            clickable: true,
-            resizable: true,
-            striped: true,
+            game: RSDKInfo::get().expect("Unable to obtain information about selected game"),
         }
     }
-}
 
-impl ModTable {
-    fn ui(&mut self, ui: &mut egui::Ui, game: rsdk::GameInfo) {
-        self.table_ui(ui, game.mods);
-    }
+    pub fn update(&mut self, message: ModsMessage) {
+        match message {
+            ModsMessage::EnableAll => {
+                for mi in &mut self.game.mods {
+                    mi.enabled = true;
+                }
+            },
+            ModsMessage::DisableAll => {
+                for mi in &mut self.game.mods {
+                    mi.enabled = false;
+                }
+            },
+            ModsMessage::Checkbox(_state) => {
 
-    fn table_ui(&mut self, ui: &mut egui::Ui, mods: Vec<rsdk::ModInfo>) {
-        use egui_extras::{Column, TableBuilder};
-
-        let text_height = egui::TextStyle::Body
-            .resolve(ui.style())
-            .size
-            .max(ui.spacing().interact_size.y);
-        let mut table = TableBuilder::new(ui)
-            .resizable(self.resizable)
-            .striped(true)
-            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            .column(Column::auto())
-            .column(Column::auto())
-            .column(Column::remainder());
-            // min_scrolled_height(0.0);
-
-        if self.clickable {
-            table = table.sense(egui::Sense::click());
-        }
-
-        table.header(20.0, |mut header| {
-            header.col(|ui| {
-                ui.strong("Name");
-            });
-            header.col(|ui| {
-                ui.strong("Author");
-            });
-            header.col(|ui| {
-                ui.strong("Version");
-            });
-        }).body(|mut body| {
-            for mut mi in mods {
-                body.row(text_height, |mut row| {
-                    row.col(|ui| {
-                        ui.checkbox(&mut mi.enabled, "");
-                        ui.label(mi.name);
-                    });
-                    row.col(|ui| {
-                        ui.label(mi.author);
-                    });
-                    row.col(|ui| {
-                        ui.label(mi.version);
-                    });
-                });
             }
-        });
-    }
-}
-
-#[derive(PartialEq)]
-pub struct Mods {
-    table: ModTable
-}
-
-impl Default for Mods {
-    fn default() -> Self {
-        Self {
-            table: ModTable::default()
+            ModsMessage::Save => {
+                self.game.save().expect("Unable to save changes");
+            }
         }
     }
 }
 
-impl Mods {
-    pub fn ui(&mut self, ui: &mut egui::Ui, game: rsdk::GameInfo) {
-        self.table.ui(ui, game);
+impl Tab for ModsTab {
+    type Message = Message;
+
+    fn title(&self) -> String {
+        String::from("")
+    }
+
+    fn tab_label(&self) -> TabLabel {
+        TabLabel::Text(String::from("Mods"))
+    }
+
+    fn content(&self) -> Element<'_, Self::Message> {
+        let table = {
+            let bold = |header| {
+                text(header).font(Font {
+                    weight: font::Weight::Bold,
+                    ..Font::DEFAULT
+                })
+            };
+
+            let columns = [
+                table::column(bold("Name"), |mi: &ModInfo| {
+                    text(&mi.name)
+                }),
+                table::column(bold("Author"), |mi: &ModInfo| text(&mi.author)),
+                table::column(bold("Version"), |mi: &ModInfo| text(&mi.version))
+            ];
+
+            table(columns, &self.game.mods)
+            .padding_x(10.0)
+            .padding_y(5.0)
+            .separator_x(1.0)
+            .separator_y(1.0)
+        };
+
+        let controls = {
+            let labeled_button =
+            |label,
+            on_change: Message| {
+                button(label).on_press(on_change)
+            };
+
+            column![
+                labeled_button("Enable All", Message::Mods(ModsMessage::EnableAll)),
+                labeled_button("Disable All", Message::Mods(ModsMessage::DisableAll)),
+                labeled_button("Save", Message::Mods(ModsMessage::Save))
+            ]
+            .spacing(10)
+            .height(400)
+        };
+
+        Container::new(
+            Column::new()
+            .align_x(Alignment::Center)
+            .max_width(600)
+            .padding(20)
+            .spacing(16)
+            .push(
+                column![
+                    center_y(scrollable(center_x(table)).spacing(10)).padding(10),
+                    center_x(controls).padding(10).style(container::dark)
+                ]
+            )
+        ).into()
     }
 }
