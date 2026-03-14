@@ -12,7 +12,7 @@ use eframe::egui;
 
 use crate::rsdk_ini::Settings;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
@@ -29,5 +29,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(Box::new(RMM::new(cc)))
         })
     );
-    Ok(())
 }
