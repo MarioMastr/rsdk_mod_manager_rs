@@ -27,7 +27,7 @@ impl Settings {
         let game = crate::rsdk::Game::None;
 
         if let Some (file) = DialogBuilder::file()
-            .set_location("~")
+            .set_location(".")
             .add_filter("RSDK Executables", [""])
             .set_filename("RSDKv")
             .open_single_file()
