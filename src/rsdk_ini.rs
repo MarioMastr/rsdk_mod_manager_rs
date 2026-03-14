@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use ini::Ini;
 
 use crate::rsdk;
+use native_dialog::DialogBuilder;
 
 pub struct Settings {
     pub path: std::path::PathBuf,
@@ -31,11 +32,13 @@ impl Settings {
         let mut settings = Ini::new();
         let game = Settings::get_game();
 
-        if let Some(file) = rfd::FileDialog::new()
-            .add_filter("RSDK Executables", &[""])
-            .set_file_name("RSDKv")
-            .set_directory("/")
-            .pick_file()
+        if let Some (file) = DialogBuilder::file()
+            .set_location("~")
+            .add_filter("RSDK Executables", [""])
+            .set_filename("RSDKv")
+            .open_single_file()
+            .show()
+            .expect("Unable to open file selector")
         {
             settings.with_section(Some("settings"))
                 .set("path", file.to_str().unwrap())
