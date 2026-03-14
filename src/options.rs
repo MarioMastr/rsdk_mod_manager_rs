@@ -1,10 +1,20 @@
+use eframe::egui;
 
-#[derive(PartialEq, Default)]
-pub struct OptionsTab {
+#[derive(PartialEq)]
+pub struct Options {
     save_path: String,
 }
 
-#[derive(Debug, Clone)]
-pub enum OptionsMessage {
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            save_path: String::new(),
+        }
+    }
 }
 
+impl Options {
+    pub fn ui(&mut self, _ui: &mut egui::Ui) {
+
+    }
+}

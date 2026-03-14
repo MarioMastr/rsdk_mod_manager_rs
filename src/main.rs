@@ -8,11 +8,26 @@ pub mod options;
 pub mod rsdk_ini;
 
 use ui::RMM;
+use eframe::egui;
 
-fn main() -> iced::Result {
+use crate::rsdk_ini::Settings;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    rsdk_ini::Settings::create_ini().unwrap();
-    iced::application(RMM::new, RMM::update, RMM::view)
-        .theme(iced::Theme::CatppuccinMocha)
-        .run()
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([666.0, 585.0])
+            .with_min_inner_size([666.0, 585.0]),
+
+        ..Default::default()
+    };
+    let _ = eframe::run_native(
+        "RSDK Mod Manager",
+        options,
+        Box::new(|cc| {
+            Settings::create_ini().expect("Unable to create managerSettings.ini");
+            Ok(Box::new(RMM::new(cc)))
+        })
+    );
+    Ok(())
 }

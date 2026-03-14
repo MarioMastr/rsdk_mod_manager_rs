@@ -12,7 +12,7 @@ pub enum Game {
     None,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug , Clone)]
 pub struct ModInfo {
     pub name: String,
     pub author: String,
@@ -29,7 +29,8 @@ impl Default for ModInfo {
 #[derive(PartialEq)]
 pub struct RSDKInfo {
     pub rsdk_revision: u8,
-    pub name: Game,
+    pub game: Game,
+    pub name: String,
     pub path: PathBuf,
     pub mods: Vec<ModInfo>,
     pub legacy: bool
@@ -37,7 +38,7 @@ pub struct RSDKInfo {
 
 impl Default for RSDKInfo {
     fn default() -> Self {
-        Self { rsdk_revision: 4, name: Game::None , path: PathBuf::new(), mods: Vec::<ModInfo>::new(), legacy: false }
+        Self { rsdk_revision: 4, game: Game::None, name: String::new(), path: PathBuf::new(), mods: Vec::<ModInfo>::new(), legacy: false }
     }
 }
 
@@ -46,7 +47,7 @@ impl RSDKInfo {
         let mut result = RSDKInfo::default();
 
         let settings = Settings::read_ini()?;
-        result.name = settings.name;
+        result.game = settings.name;
 
         if let Some(parent) = settings.path.parent() {
             result.path = parent.to_path_buf();
@@ -54,6 +55,7 @@ impl RSDKInfo {
 
         if let Some(rsdk_name) = settings.path.file_name() {
             if let Some(rsdk_name_str) = rsdk_name.to_str() {
+                result.name = rsdk_name_str.to_string();
                 match rsdk_name_str {
                     "RSDKv3" => result.rsdk_revision = 3,
                     "RSDKv4" => result.rsdk_revision = 4,
@@ -65,7 +67,7 @@ impl RSDKInfo {
             }
         }
 
-        if result.rsdk_revision == 5 && result.name != Game::SonicMania {
+        if result.rsdk_revision == 5 && result.game != Game::SonicMania {
             result.legacy = true;
         }
     
