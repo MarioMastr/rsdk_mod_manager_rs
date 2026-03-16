@@ -64,7 +64,8 @@ impl ModTable {
                     self.game.save().expect("Unable to save changes");
                     std::process::Command::new("./".to_owned() + &self.game.name)
                         .current_dir(&self.game.path)
-                        .output().expect("Unable to launch game");
+                        .output()
+                        .expect("Unable to launch game");
                 }
             });
         });
