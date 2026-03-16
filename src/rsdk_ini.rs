@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use ini::Ini;
 
@@ -18,7 +18,7 @@ impl Default for Settings {
 
 impl Settings {
     pub fn create_ini() -> Result<(), Box<dyn std::error::Error>> {
-        let manager_settings: &std::path::Path = std::path::Path::new("managerSettings.ini");
+        let manager_settings: &Path = Path::new("managerSettings.ini");
         if manager_settings.exists() {
             return Ok(());
         }
