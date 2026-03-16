@@ -12,7 +12,7 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { path: Default::default(), name: crate::rsdk::Game::Sonic1 }
+        Self { path: Default::default(), name: crate::rsdk::Game::None }
     }
 }
 
