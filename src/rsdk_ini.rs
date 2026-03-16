@@ -26,7 +26,7 @@ impl Settings {
         let mut settings = Ini::new();
         let game = Game::None;
 
-        if let Some (file) = DialogBuilder::file()
+        if let Some(file) = DialogBuilder::file()
             .set_location(".")
             .add_filter("RSDK Executables", [""])
             .set_filename("RSDKv")
