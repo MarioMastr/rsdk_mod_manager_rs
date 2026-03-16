@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use ini::Ini;
 
-use crate::rsdk::{self, RSDKInfo, Game};
+use crate::rsdk::{RSDKInfo, Game};
 use native_dialog::DialogBuilder;
 
 pub struct Settings {
@@ -24,7 +24,7 @@ impl Settings {
         }
 
         let mut settings = Ini::new();
-        let game = crate::rsdk::Game::None;
+        let game = Game::None;
 
         if let Some (file) = DialogBuilder::file()
             .set_location(".")
