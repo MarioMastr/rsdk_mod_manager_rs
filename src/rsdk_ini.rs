@@ -6,13 +6,13 @@ use crate::rsdk::{self, RSDKInfo, Game};
 use native_dialog::DialogBuilder;
 
 pub struct Settings {
-    pub path: std::path::PathBuf,
-    pub name: rsdk::Game,
+    pub path: PathBuf,
+    pub name: Game,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { path: Default::default(), name: crate::rsdk::Game::None }
+        Self { path: Default::default(), name: Game::None }
     }
 }
 
