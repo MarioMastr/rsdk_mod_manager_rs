@@ -1,0 +1,16 @@
+{
+  "selected_game": 1,
+  "num_games": 2,
+  "games": [
+    {
+      "nickname": "Sonic 1",
+      "path": "/home/mariomastr/Applications/RSDK/Sonic 1/RSDKv5U",
+      "name": "Sonic1"
+    },
+    {
+      "nickname": "Sonic Mania",
+      "path": "/home/mariomastr/Applications/RSDK/Sonic Mania/RSDKv5U",
+      "name": "SonicMania"
+    }
+  ]
+}

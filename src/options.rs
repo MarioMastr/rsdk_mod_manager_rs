@@ -1,4 +1,5 @@
 use eframe::egui;
+use crate::rsdk::RSDKInfo;
 
 #[derive(PartialEq)]
 pub struct Options {
@@ -14,7 +15,7 @@ impl Default for Options {
 }
 
 impl Options {
-    pub fn ui(&mut self, _ui: &mut egui::Ui) {
+    pub fn ui(&mut self, _ui: &mut egui::Ui, _game: &mut RSDKInfo) {
 
     }
 }

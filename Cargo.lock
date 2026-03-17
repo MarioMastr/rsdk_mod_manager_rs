@@ -2912,6 +2912,8 @@ dependencies = [
  "env_logger",
  "native-dialog",
  "rust-ini",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

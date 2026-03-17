@@ -1,5 +1,5 @@
-use crate::{rsdk::{Game, RSDKInfo}, rsdk_ini::Settings};
-use eframe::egui::{self, TextStyle};
+use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::ManagerSettings};
+use eframe::egui;
 use egui_extras::{TableBuilder, Column};
 
 #[derive(PartialEq)]
@@ -7,7 +7,6 @@ pub struct ModTable {
     clickable: bool,
     resizable: bool,
     striped: bool,
-    game: RSDKInfo
 }
 
 impl Default for ModTable {
@@ -16,79 +15,12 @@ impl Default for ModTable {
             clickable: true,
             resizable: true,
             striped: true,
-            game: RSDKInfo::get().expect("Cannot get information on selected game"),
         }
     }
 }
 
 impl ModTable {
-    fn ui(&mut self, ui: &mut egui::Ui) {
-        if self.game.game == Game::None {
-            egui::Window::new("Select Game")
-                .collapsible(false)
-                .resizable(false)
-                .show(ui.ctx(), |ui| {
-                    if ui.button("Sonic 1").clicked() {
-                        self.game.game = Game::Sonic1;
-                    }
-                    if ui.button("Sonic 2").clicked() {
-                        self.game.game = Game::Sonic2;
-                    }
-                    if ui.button("Sonic CD").clicked() {
-                        self.game.game = Game::SonicCD;
-                    }
-                    if ui.button("Sonic Mania").clicked() {
-                        self.game.game = Game::SonicMania;
-                    }
-                }
-            );
-
-            Settings::save_ini(&self.game).expect("Unable to save managerSettings.ini");
-        }
-        ui.vertical(|ui| {
-            ui.horizontal(|ui| {
-                if ui.button("Enable All").clicked() {
-                    self.game.mods.iter_mut().for_each(|mi| {
-                        mi.enabled = true;
-                    });
-                }
-                if ui.button("Disable All").clicked() {
-                    self.game.mods.iter_mut().for_each(|mi| {
-                        mi.enabled = false;
-                    });
-                }
-                if ui.button("Save").clicked() {
-                    self.game.save().expect("Unable to save changes");
-                }
-                if ui.button("Play").clicked() {
-                    self.game.save().expect("Unable to save changes");
-                    std::process::Command::new("./".to_owned() + &self.game.name)
-                        .current_dir(&self.game.path)
-                        .output()
-                        .expect("Unable to launch game");
-                }
-            });
-        });
-
-        ui.separator();
-
-        // Leave room for the source code link after the table demo:
-        let body_text_size = TextStyle::Body.resolve(ui.style()).size;
-        use egui_extras::{Size, StripBuilder};
-        StripBuilder::new(ui)
-            .size(Size::remainder().at_least(100.0)) // for the table
-            .size(Size::exact(body_text_size)) // for the source code link
-            .vertical(|mut strip| {
-                strip.cell(|ui| {
-                    egui::ScrollArea::horizontal().show(ui, |ui| {
-                        self.table_ui(ui);
-                    });
-                });
-            });
-
-    }
-
-    fn table_ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo) {
         let text_height = egui::TextStyle::Body
             .resolve(ui.style())
             .size
@@ -117,7 +49,7 @@ impl ModTable {
                 ui.strong("Version");
             });
         }).body(|mut body| {
-            for mi in &mut self.game.mods {
+            for mi in &mut game.mods {
                 body.row(text_height, |mut row| {
                     row.col(|ui| {
                         ui.checkbox(&mut mi.enabled, "");
@@ -157,7 +89,67 @@ impl Default for Mods {
 }
 
 impl Mods {
-    pub fn ui(&mut self, ui: &mut egui::Ui) {
-        self.table.ui(ui);
+    pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
+        if game.game == Game::None {
+            egui::Window::new("Select Game")
+                .collapsible(false)
+                .resizable(false)
+                .show(ui.ctx(), |ui| {
+                    if ui.button("Sonic 1").clicked() {
+                        game.game = Game::Sonic1;
+                        let mut game_settings = manager.games[manager.selected_game].clone();
+                        game_settings.name = game.game;
+                        game_settings.nickname = format!("{:?}", game.game);
+                        game_settings.save_entry(manager).expect("Unable to save entry");
+                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                    }
+                    if ui.button("Sonic 2").clicked() {
+                        game.game = Game::Sonic2;
+                        let mut game_settings = manager.games[manager.selected_game].clone();
+                        game_settings.name = game.game;
+                        game_settings.nickname = format!("{:?}", game.game);
+                        game_settings.save_entry(manager).expect("Unable to save entry");
+                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                    }
+                    if ui.button("Sonic CD").clicked() {
+                        game.game = Game::SonicCD;
+                        let mut game_settings = manager.games[manager.selected_game].clone();
+                        game_settings.name = game.game;
+                        game_settings.nickname = format!("{:?}", game.game);
+                        game_settings.save_entry(manager).expect("Unable to save entry");
+                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                    }
+                    if ui.button("Sonic Mania").clicked() {
+                        game.game = Game::SonicMania;
+                        let mut game_settings = manager.games[manager.selected_game].clone();
+                        game_settings.name = game.game;
+                        game_settings.nickname = format!("{:?}", game.game);
+                        game_settings.save_entry(manager).expect("Unable to save entry");
+                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                    }
+                }
+            );
+        }
+
+        ui.vertical(|ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Enable All").clicked() {
+                    game.mods.iter_mut().for_each(|mi| {
+                        mi.enabled = true;
+                    });
+                }
+                if ui.button("Disable All").clicked() {
+                    game.mods.iter_mut().for_each(|mi| {
+                        mi.enabled = false;
+                    });
+                }
+            });
+        });
+
+        ui.separator();
+
+        egui::ScrollArea::horizontal().show(ui, |ui| {
+            self.table.ui(ui, &mut game);
+        });
     }
 }

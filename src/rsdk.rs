@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 use ini::Ini;
-use crate::rsdk_ini::Settings;
+use crate::rsdk_json::ManagerSettings;
+use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Game {
     Sonic1,
     Sonic2,
@@ -43,17 +44,18 @@ impl Default for RSDKInfo {
 }
 
 impl RSDKInfo {
-    pub fn get() -> Result<RSDKInfo, Box<dyn std::error::Error>> {
+    pub fn get(manager_settings: ManagerSettings) -> Result<RSDKInfo, Box<dyn std::error::Error>> {
         let mut result = RSDKInfo::default();
+        
+        let game_settings = &manager_settings.games[manager_settings.selected_game];
 
-        let settings = Settings::read_ini()?;
-        result.game = settings.name;
+        result.game = game_settings.name;
 
-        if let Some(parent) = settings.path.parent() {
+        if let Some(parent) = game_settings.path.parent() {
             result.path = parent.to_path_buf();
         }
 
-        if let Some(rsdk_name) = settings.path.file_name() {
+        if let Some(rsdk_name) = game_settings.path.file_name() {
             if let Some(rsdk_name_str) = rsdk_name.to_str() {
                 result.name = rsdk_name_str.to_string();
                 match rsdk_name_str {

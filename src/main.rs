@@ -5,12 +5,10 @@ pub mod rsdk;
 pub mod ui;
 pub mod mods;
 pub mod options;
-pub mod rsdk_ini;
+pub mod rsdk_json;
 
 use ui::RMM;
 use eframe::egui;
-
-use crate::rsdk_ini::Settings;
 
 fn main() {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
@@ -25,7 +23,6 @@ fn main() {
         "RSDK Mod Manager",
         options,
         Box::new(|cc| {
-            Settings::create_ini().expect("Unable to create managerSettings.ini");
             Ok(Box::new(RMM::new(cc)))
         })
     );
