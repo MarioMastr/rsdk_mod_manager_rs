@@ -21,7 +21,8 @@ pub struct RMM {
     mods: Mods,
     options: Options,
     game: RSDKInfo,
-    manager: ManagerSettings
+    manager: ManagerSettings,
+    show_delete_box: bool
 }
 
 impl RMM {
@@ -61,6 +62,28 @@ impl eframe::App for RMM {
             ui.separator();
 
             let body_text_size = TextStyle::Body.resolve(ui.style()).size;
+
+            if self.show_delete_box {
+                egui::Window::new("Remove Game")
+                    .collapsible(false)
+                    .resizable(false)
+                    .show(ui.ctx(), |ui| {
+                        ui.label(format!("Are you sure you want to remove {:?}?", self.manager.games[self.manager.selected_game].nickname));
+                        ui.add_space(10.0);
+                        ui.horizontal(|ui| {
+                            if ui.button("Yes").clicked() {
+                                self.manager.remove_entry().expect("Unable to remove entry");
+                                self.game = RSDKInfo::get(&self.manager).expect("Unable to get information on selected game");
+                                self.show_delete_box = false;
+                            }
+                            if ui.button("No").clicked() {
+                                self.show_delete_box = false;
+                            }
+                        });
+                    }
+                );
+            }
+
             StripBuilder::new(ui)
                 .size(Size::remainder().at_least(100.0)) // for the table
                 .size(Size::exact(body_text_size)) // for the source code link
@@ -81,6 +104,9 @@ impl eframe::App for RMM {
                             if ui.button("Add").clicked() {
                                 self.manager.create_entry().expect("Unable to create entry");
                                 self.game = RSDKInfo::get(&self.manager).expect("Unable to get information on selected game");
+                            }
+                            if ui.button("Remove").clicked() {
+                                self.show_delete_box = true;
                             }
                         });
                         ui.horizontal(|ui| {

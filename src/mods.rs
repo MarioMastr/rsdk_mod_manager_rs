@@ -3,40 +3,30 @@ use eframe::egui;
 use egui_extras::{TableBuilder, Column};
 
 #[derive(PartialEq)]
-pub struct ModTable {
-    clickable: bool,
-    resizable: bool,
-    striped: bool,
+pub struct Mods {
 }
 
-impl Default for ModTable {
+impl Default for Mods {
     fn default() -> Self {
-        Self {
-            clickable: true,
-            resizable: true,
-            striped: true,
-        }
+        Self {}
     }
 }
 
-impl ModTable {
-    fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo) {
+impl Mods {
+    pub fn table_ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo) {
         let text_height = egui::TextStyle::Body
             .resolve(ui.style())
             .size
             .max(ui.spacing().interact_size.y);
         let mut table = TableBuilder::new(ui)
-            .resizable(self.resizable)
+            .resizable(true)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(Column::auto())
             .column(Column::auto())
             .column(Column::remainder());
-            // min_scrolled_height(0.0);
 
-        if self.clickable {
-            table = table.sense(egui::Sense::click());
-        }
+        table = table.sense(egui::Sense::click());
 
         table.header(20.0, |mut header| {
             header.col(|ui| {
@@ -49,7 +39,7 @@ impl ModTable {
                 ui.strong("Version");
             });
         }).body(|mut body| {
-            for mi in &mut game.mods {
+            game.mods.iter_mut().for_each(|mi| {
                 body.row(text_height, |mut row| {
                     row.col(|ui| {
                         ui.checkbox(&mut mi.enabled, "");
@@ -62,48 +52,24 @@ impl ModTable {
                         ui.label(&mi.version);
                     });
                 });
-            }
+            });
         });
     }
-}
 
-#[derive(PartialEq)]
-pub struct Mods {
-    table: ModTable,
-    striped: bool,
-    overline: bool,
-    resizable: bool,
-    clickable: bool,
-}
-
-impl Default for Mods {
-    fn default() -> Self {
-        Self {
-            table: ModTable::default(),
-            striped: true,
-            overline: true,
-            resizable: true,
-            clickable: true,
-        }
-    }
-}
-
-impl Mods {
     pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
-        let update_entry = |
-            manager: &mut ManagerSettings,
-            game: &mut RSDKInfo,
-            game_settings: &mut GameSettings,
-            game_name: Game
-        | {
-            game.game = game_name;
-            game_settings.name = game.game;
-            game_settings.nickname = format!("{:?}", game.game);
-            game_settings.save_entry(manager).expect("Unable to save entry");
-            *game = RSDKInfo::get(manager).expect("Unable to get information on selected game");
-        };
-
         if game.game == Game::None {
+            let update_entry = |
+                manager: &mut ManagerSettings,
+                game: &mut RSDKInfo,
+                game_settings: &mut GameSettings,
+                game_name: Game
+            | {
+                game_settings.name = game_name;
+                game_settings.nickname = format!("{:?}", game_name);
+                game_settings.save_entry(manager).expect("Unable to save entry");
+                *game = RSDKInfo::get(manager).expect("Unable to get information on selected game");
+            };
+
             egui::Window::new("Select Game")
                 .collapsible(false)
                 .resizable(false)
@@ -146,7 +112,7 @@ impl Mods {
         ui.separator();
 
         egui::ScrollArea::horizontal().show(ui, |ui| {
-            self.table.ui(ui, &mut game);
+            self.table_ui(ui, &mut game);
         });
     }
 }

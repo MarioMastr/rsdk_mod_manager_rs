@@ -80,7 +80,19 @@ impl ManagerSettings {
 
             self.games.push(settings);
             self.num_games = self.games.len();
+            self.selected_game = self.num_games - 1;
         }
+
+        self.save_json()?;
+
+        Ok(())
+    }
+
+    pub fn remove_entry(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        self.games.remove(self.selected_game);
+
+        self.num_games -= 1;
+        self.selected_game = 0;
 
         self.save_json()?;
 
