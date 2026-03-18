@@ -33,26 +33,26 @@ impl Options {
                         });
                     }
                 );
+            } else {
+                egui::Window::new("Remove Game")
+                    .collapsible(false)
+                    .resizable(false)
+                    .show(ui.ctx(), |ui| {
+                        ui.label(format!("Are you sure you want to remove {:?}?", manager.games[manager.selected_game].nickname));
+                        ui.add_space(10.0);
+                        ui.horizontal(|ui| {
+                            if ui.button("Yes").clicked() {
+                                manager.remove_entry().expect("Unable to remove entry");
+                                game.refresh(manager);
+                                self.show_delete_box = false;
+                            }
+                            if ui.button("No").clicked() {
+                                self.show_delete_box = false;
+                            }
+                        });
+                    }
+                );
             }
-            
-            egui::Window::new("Remove Game")
-                .collapsible(false)
-                .resizable(false)
-                .show(ui.ctx(), |ui| {
-                    ui.label(format!("Are you sure you want to remove {:?}?", manager.games[manager.selected_game].nickname));
-                    ui.add_space(10.0);
-                    ui.horizontal(|ui| {
-                        if ui.button("Yes").clicked() {
-                            manager.remove_entry().expect("Unable to remove entry");
-                            game.refresh(manager);
-                            self.show_delete_box = false;
-                        }
-                        if ui.button("No").clicked() {
-                            self.show_delete_box = false;
-                        }
-                    });
-                }
-            );
         }
         
         if ui.button("Remove Current Game").clicked() {
