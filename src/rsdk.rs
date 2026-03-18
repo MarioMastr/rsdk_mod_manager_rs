@@ -18,12 +18,13 @@ pub struct ModInfo {
     pub name: String,
     pub author: String,
     pub version: String,
+    pub description: String,
     pub enabled: bool,
 }
 
 impl Default for ModInfo {
     fn default() -> Self {
-        Self { name: String::from(""), author: String::from(""), version: String::from(""), enabled: false, }
+        Self { name: String::new(), author: String::new(), version: String::new(), description: String::new(), enabled: false, }
     }
 }
 
@@ -78,6 +79,10 @@ impl RSDKInfo {
         Ok(result)
     }
 
+    pub fn refresh(&mut self, manager_settings: &ManagerSettings) {
+        *self = RSDKInfo::get(manager_settings).expect("Unable to get information on selected game");
+    }
+
     pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn std::error::Error>> {
         let mut result = Vec::<ModInfo>::new();
         let mods_path = self.path.join("mods");
@@ -109,6 +114,11 @@ impl RSDKInfo {
                 temp.name = section.get("Name").unwrap().to_string();
                 temp.author = section.get("Author").unwrap().to_string();
                 temp.version = section.get("Version").unwrap().to_string();
+
+                if let Some(description) = section.get("Description") {
+                    temp.description = description.to_string();
+                }
+
                 temp.enabled = modconfig_section.get(&temp.name).unwrap() == (
                     if self.rsdk_revision == 5 {
                         "y"

@@ -1,10 +1,9 @@
 use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::{GameSettings, ManagerSettings}};
 use eframe::egui;
-use egui_extras::{TableBuilder, Column};
+use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
 #[derive(PartialEq)]
-pub struct Mods {
-}
+pub struct Mods {}
 
 impl Default for Mods {
     fn default() -> Self {
@@ -24,6 +23,7 @@ impl Mods {
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(Column::auto())
             .column(Column::auto())
+            .column(Column::auto())
             .column(Column::remainder());
 
         table = table.sense(egui::Sense::click());
@@ -38,6 +38,9 @@ impl Mods {
             header.col(|ui| {
                 ui.strong("Version");
             });
+            header.col(|ui| {
+                ui.strong("Description");
+            });
         }).body(|mut body| {
             game.mods.iter_mut().for_each(|mi| {
                 body.row(text_height, |mut row| {
@@ -50,6 +53,9 @@ impl Mods {
                     });
                     row.col(|ui| {
                         ui.label(&mi.version);
+                    });
+                    row.col(|ui| {
+                        ui.label(&mi.description);
                     });
                 });
             });
@@ -67,7 +73,7 @@ impl Mods {
                 game_settings.name = game_name;
                 game_settings.nickname = format!("{:?}", game_name);
                 game_settings.save_entry(manager).expect("Unable to save entry");
-                *game = RSDKInfo::get(manager).expect("Unable to get information on selected game");
+                game.refresh(manager);
             };
 
             egui::Window::new("Select Game")
@@ -111,8 +117,30 @@ impl Mods {
 
         ui.separator();
 
-        egui::ScrollArea::horizontal().show(ui, |ui| {
-            self.table_ui(ui, &mut game);
-        });
+        StripBuilder::new(ui)
+            .size(Size::remainder().at_least(100.0))
+            .size(Size::exact(15.0))
+            .vertical(|mut strip| {
+                strip.cell(|ui| {
+                    egui::ScrollArea::horizontal().show(ui, |ui| {
+                        self.table_ui(ui, &mut game);
+                    });
+                });
+                strip.cell(|ui| {
+                    ui.horizontal(|ui| {
+                        if ui.button("Refresh").clicked() {
+                            game.refresh(manager);
+                        }
+
+                        ui.add_space(ui.available_width() - 34.0);
+
+                        if ui.button("New").clicked() {}
+                    });
+                });
+            }
+        );
+
+        ui.separator();
+
     }
 }
