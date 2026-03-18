@@ -44,7 +44,7 @@ impl Default for RSDKInfo {
 }
 
 impl RSDKInfo {
-    pub fn get(manager_settings: ManagerSettings) -> Result<RSDKInfo, Box<dyn std::error::Error>> {
+    pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn std::error::Error>> {
         let mut result = RSDKInfo::default();
         
         let game_settings = &manager_settings.games[manager_settings.selected_game];

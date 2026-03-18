@@ -1,4 +1,4 @@
-use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::ManagerSettings};
+use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::{GameSettings, ManagerSettings}};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column};
 
@@ -90,42 +90,39 @@ impl Default for Mods {
 
 impl Mods {
     pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
+        let update_entry = |
+            manager: &mut ManagerSettings,
+            game: &mut RSDKInfo,
+            game_settings: &mut GameSettings,
+            game_name: Game
+        | {
+            game.game = game_name;
+            game_settings.name = game.game;
+            game_settings.nickname = format!("{:?}", game.game);
+            game_settings.save_entry(manager).expect("Unable to save entry");
+            *game = RSDKInfo::get(manager).expect("Unable to get information on selected game");
+        };
+
         if game.game == Game::None {
             egui::Window::new("Select Game")
                 .collapsible(false)
                 .resizable(false)
                 .show(ui.ctx(), |ui| {
                     if ui.button("Sonic 1").clicked() {
-                        game.game = Game::Sonic1;
                         let mut game_settings = manager.games[manager.selected_game].clone();
-                        game_settings.name = game.game;
-                        game_settings.nickname = format!("{:?}", game.game);
-                        game_settings.save_entry(manager).expect("Unable to save entry");
-                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                        update_entry(manager, game, &mut game_settings, Game::Sonic1);
                     }
                     if ui.button("Sonic 2").clicked() {
-                        game.game = Game::Sonic2;
                         let mut game_settings = manager.games[manager.selected_game].clone();
-                        game_settings.name = game.game;
-                        game_settings.nickname = format!("{:?}", game.game);
-                        game_settings.save_entry(manager).expect("Unable to save entry");
-                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                        update_entry(manager, game, &mut game_settings, Game::Sonic2);
                     }
                     if ui.button("Sonic CD").clicked() {
-                        game.game = Game::SonicCD;
                         let mut game_settings = manager.games[manager.selected_game].clone();
-                        game_settings.name = game.game;
-                        game_settings.nickname = format!("{:?}", game.game);
-                        game_settings.save_entry(manager).expect("Unable to save entry");
-                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                        update_entry(manager, game, &mut game_settings, Game::SonicCD);
                     }
                     if ui.button("Sonic Mania").clicked() {
-                        game.game = Game::SonicMania;
                         let mut game_settings = manager.games[manager.selected_game].clone();
-                        game_settings.name = game.game;
-                        game_settings.nickname = format!("{:?}", game.game);
-                        game_settings.save_entry(manager).expect("Unable to save entry");
-                        *game = RSDKInfo::get(manager.clone()).expect("Unable to get information on selected game");
+                        update_entry(manager, game, &mut game_settings, Game::SonicMania);
                     }
                 }
             );
