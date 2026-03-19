@@ -1,4 +1,4 @@
-use crate::{rsdk::{Game, ModInfo, RSDKInfo}, rsdk_json::ManagerSettings};
+use crate::{rsdk::{ ModInfo, RSDKInfo}, rsdk_json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
@@ -66,45 +66,6 @@ impl Mods {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
-        if game.game == Game::None {
-            let update_entry = |
-                manager: &mut ManagerSettings,
-                game: &mut RSDKInfo,
-                game_name: Game
-            | {
-                let mut game_settings = manager.games[manager.selected_game].clone();
-                game_settings.name = game_name;
-                game_settings.nickname = format!("{:?}", game_name);
-                game_settings.save_entry(manager).expect("Unable to save entry");
-                game.refresh(manager);
-            };
-
-            egui::Window::new("Select Game")
-                .collapsible(false)
-                .resizable(false)
-                .show(ui.ctx(), |ui| {
-                    if ui.button("Sonic 1").clicked() {
-                        update_entry(manager, game, Game::Sonic1);
-                    }
-                    if ui.button("Sonic 2").clicked() {
-                        update_entry(manager, game, Game::Sonic2);
-                    }
-                    if ui.button("Sonic CD").clicked() {
-                        update_entry(manager, game, Game::SonicCD);
-                    }
-                    if ui.button("Sonic Mania").clicked() {
-                        update_entry(manager, game, Game::SonicMania);
-                    }
-                    if ui.button("Sonic 1 Forever").clicked() {
-                        update_entry(manager, game, Game::S1F);
-                    }
-                    if ui.button("Sonic 2 Absolute").clicked() {
-                        update_entry(manager, game, Game::S2A);
-                    }
-                }
-            );
-        }
-
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
                 if ui.button("Enable All").clicked() {
@@ -145,11 +106,10 @@ impl Mods {
                         if ui.button("New").clicked() {}
                     });
                 });
-                if self.selected_mod.description != "" {
-                    strip.cell(|ui| {
-                        ui.label(format!("Description: {}", self.selected_mod.description));
-                    })
-                }
+                strip.cell(|ui| {
+                    ui.label(format!("Description: {}", self.selected_mod.description));
+                });
+                
             }
         );
 

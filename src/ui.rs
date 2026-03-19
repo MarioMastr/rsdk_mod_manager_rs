@@ -3,7 +3,7 @@ use std::ops::Index;
 use crate::rsdk_json::ManagerSettings;
 use crate::mods::Mods;
 use crate::options::Options;
-use crate::rsdk::RSDKInfo;
+use crate::rsdk::{RSDKInfo, Game};
 
 use eframe::egui;
 use egui_extras::{Size, StripBuilder};
@@ -42,6 +42,45 @@ impl RMM {
 impl eframe::App for RMM {
    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            if self.game.game == Game::None {
+                let update_entry = |
+                    manager: &mut ManagerSettings,
+                    game: &mut RSDKInfo,
+                    game_name: Game
+                | {
+                    let mut game_settings = manager.games[manager.selected_game].clone();
+                    game_settings.name = game_name;
+                    game_settings.nickname = format!("{:?}", game_name);
+                    game_settings.save_entry(manager).expect("Unable to save entry");
+                    game.refresh(manager);
+                };
+
+                egui::Window::new("Select Game")
+                    .collapsible(false)
+                    .resizable(false)
+                    .show(ui.ctx(), |ui| {
+                        if ui.button("Sonic 1").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::Sonic1);
+                        }
+                        if ui.button("Sonic 2").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::Sonic2);
+                        }
+                        if ui.button("Sonic CD").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::SonicCD);
+                        }
+                        if ui.button("Sonic Mania").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::SonicMania);
+                        }
+                        if ui.button("Sonic 1 Forever").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::S1F);
+                        }
+                        if ui.button("Sonic 2 Absolute").clicked() {
+                            update_entry(&mut self.manager, &mut self.game, Game::S2A);
+                        }
+                    }
+                );
+            }
+
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.tabs, Tabs::Mods, "Mods");
                 ui.selectable_value(&mut self.tabs, Tabs::Options, "Options");
