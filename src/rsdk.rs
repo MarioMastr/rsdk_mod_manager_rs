@@ -22,11 +22,12 @@ pub struct ModInfo {
     pub version: String,
     pub description: String,
     pub enabled: bool,
+    pub selected: bool
 }
 
 impl Default for ModInfo {
     fn default() -> Self {
-        Self { name: String::new(), author: String::new(), version: String::new(), description: String::new(), enabled: false, }
+        Self { name: String::new(), author: String::new(), version: String::new(), description: String::new(), enabled: false, selected: false }
     }
 }
 

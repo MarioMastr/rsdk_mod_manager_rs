@@ -30,7 +30,6 @@ impl Mods {
             .column(Column::remainder());
 
         table = table.sense(egui::Sense::click());
-        let mut clicked = false;
 
         table.header(20.0, |mut header| {
             header.col(|ui| {
@@ -45,21 +44,24 @@ impl Mods {
         }).body(|mut body| {
             game.mods.iter_mut().for_each(|mi| {
                 body.row(text_height, |mut row| {
-                    clicked |= row.col(|ui| {
+                    row.set_selected(mi.selected);
+
+                    row.col(|ui| {
                         ui.checkbox(&mut mi.enabled, "");
                         ui.label(&mi.name);
-                    }).1.clicked();
-                    clicked |= row.col(|ui| {
+                    });
+                    row.col(|ui| {
                         ui.label(&mi.author);
-                    }).1.clicked();
-                    clicked |= row.col(|ui| {
+                    });
+                    row.col(|ui| {
                         ui.label(&mi.version);
-                    }).1.clicked();
+                    });
+
+                    self.toggle_row_selection(mi, &row.response());
                 });
 
-                if clicked {
+                if mi.selected {
                     self.selected_mod = mi.clone();
-                    clicked = false;
                 }
             });
         });
@@ -114,6 +116,11 @@ impl Mods {
         );
 
         ui.separator();
+    }
 
+    fn toggle_row_selection(&mut self, mi: &mut ModInfo, row_response: &egui::Response) {
+        if row_response.clicked() {
+            mi.selected = !mi.selected;
+        }
     }
 }
