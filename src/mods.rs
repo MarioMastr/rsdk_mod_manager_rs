@@ -145,9 +145,11 @@ impl Mods {
                         if ui.button("New").clicked() {}
                     });
                 });
-                strip.cell(|ui| {
-                    ui.label(format!("Description: {:?}", self.selected_mod.description));
-                })
+                if self.selected_mod.description != "" {
+                    strip.cell(|ui| {
+                        ui.label(format!("Description: {}", self.selected_mod.description));
+                    })
+                }
             }
         );
 

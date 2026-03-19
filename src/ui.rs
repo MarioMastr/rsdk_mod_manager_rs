@@ -66,11 +66,11 @@ impl eframe::App for RMM {
                     strip.cell(|ui| {
                         ui.horizontal(|ui| {
                             egui::ComboBox::from_label(String::new())
-                                .selected_text(format!("{:?}", self.manager.games[self.manager.selected_game].nickname))
+                                .selected_text(&self.manager.games[self.manager.selected_game].nickname)
                                 .show_ui(ui, |ui| {
                                     for n in 0..self.manager.num_games {
                                         let settings = self.manager.games.index(n);
-                                        if ui.selectable_value(&mut self.manager.selected_game, n, settings.nickname.clone()).changed() {
+                                        if ui.selectable_value(&mut self.manager.selected_game, n, &settings.nickname).changed() {
                                             self.game.refresh(&self.manager);
                                             self.manager.save_json().expect("Unable to save managerSettings.json");
                                         }
