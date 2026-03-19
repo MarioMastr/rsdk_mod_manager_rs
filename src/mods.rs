@@ -67,9 +67,9 @@ impl Mods {
             let update_entry = |
                 manager: &mut ManagerSettings,
                 game: &mut RSDKInfo,
-                game_settings: &mut GameSettings,
                 game_name: Game
             | {
+                let mut game_settings = manager.games[manager.selected_game].clone();
                 game_settings.name = game_name;
                 game_settings.nickname = format!("{:?}", game_name);
                 game_settings.save_entry(manager).expect("Unable to save entry");
@@ -81,20 +81,16 @@ impl Mods {
                 .resizable(false)
                 .show(ui.ctx(), |ui| {
                     if ui.button("Sonic 1").clicked() {
-                        let mut game_settings = manager.games[manager.selected_game].clone();
-                        update_entry(manager, game, &mut game_settings, Game::Sonic1);
+                        update_entry(manager, game, Game::Sonic1);
                     }
                     if ui.button("Sonic 2").clicked() {
-                        let mut game_settings = manager.games[manager.selected_game].clone();
-                        update_entry(manager, game, &mut game_settings, Game::Sonic2);
+                        update_entry(manager, game, Game::Sonic2);
                     }
                     if ui.button("Sonic CD").clicked() {
-                        let mut game_settings = manager.games[manager.selected_game].clone();
-                        update_entry(manager, game, &mut game_settings, Game::SonicCD);
+                        update_entry(manager, game, Game::SonicCD);
                     }
                     if ui.button("Sonic Mania").clicked() {
-                        let mut game_settings = manager.games[manager.selected_game].clone();
-                        update_entry(manager, game, &mut game_settings, Game::SonicMania);
+                        update_entry(manager, game, Game::SonicMania);
                     }
                 }
             );
