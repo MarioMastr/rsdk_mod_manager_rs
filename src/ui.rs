@@ -72,6 +72,7 @@ impl eframe::App for RMM {
                                         let settings = self.manager.games.index(n);
                                         if ui.selectable_value(&mut self.manager.selected_game, n, settings.nickname.clone()).changed() {
                                             self.game.refresh(&self.manager);
+                                            self.manager.save_json().expect("Unable to save managerSettings.json");
                                         }
                                     }
                                     if ui.button("New Game").clicked() {
