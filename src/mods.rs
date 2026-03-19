@@ -1,13 +1,17 @@
-use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::ManagerSettings};
+use crate::{rsdk::{Game, ModInfo, RSDKInfo}, rsdk_json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
 #[derive(PartialEq)]
-pub struct Mods {}
+pub struct Mods {
+    selected_mod: ModInfo
+}
 
 impl Default for Mods {
     fn default() -> Self {
-        Self {}
+        Self {
+            selected_mod: ModInfo::default()
+        }
     }
 }
 
@@ -21,12 +25,12 @@ impl Mods {
             .resizable(true)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            .column(Column::auto())
-            .column(Column::auto())
+            .column(Column::remainder())
             .column(Column::auto())
             .column(Column::remainder());
 
         table = table.sense(egui::Sense::click());
+        let mut clicked = false;
 
         table.header(20.0, |mut header| {
             header.col(|ui| {
@@ -38,26 +42,25 @@ impl Mods {
             header.col(|ui| {
                 ui.strong("Version");
             });
-            header.col(|ui| {
-                ui.strong("Description");
-            });
         }).body(|mut body| {
             game.mods.iter_mut().for_each(|mi| {
                 body.row(text_height, |mut row| {
-                    row.col(|ui| {
+                    clicked |= row.col(|ui| {
                         ui.checkbox(&mut mi.enabled, "");
                         ui.label(&mi.name);
-                    });
-                    row.col(|ui| {
+                    }).1.clicked();
+                    clicked |= row.col(|ui| {
                         ui.label(&mi.author);
-                    });
-                    row.col(|ui| {
+                    }).1.clicked();
+                    clicked |= row.col(|ui| {
                         ui.label(&mi.version);
-                    });
-                    row.col(|ui| {
-                        ui.label(&mi.description);
-                    });
+                    }).1.clicked();
                 });
+
+                if clicked {
+                    self.selected_mod = mi.clone();
+                    clicked = false;
+                }
             });
         });
     }
@@ -116,7 +119,8 @@ impl Mods {
         let height = ui.available_height();
 
         StripBuilder::new(ui)
-            .size(Size::remainder().at_most(height - 30.0))
+            .size(Size::remainder().at_most(height - 48.5))
+            .size(Size::exact(5.0))
             .size(Size::exact(5.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
@@ -135,6 +139,9 @@ impl Mods {
                         if ui.button("New").clicked() {}
                     });
                 });
+                strip.cell(|ui| {
+                    ui.label(format!("Description: {:?}", self.selected_mod.description));
+                })
             }
         );
 
