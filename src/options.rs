@@ -65,6 +65,12 @@ impl Options {
                     if ui.button("Remove Current Game").clicked() {
                         self.show_delete_box = true;
                     }
+                    ui.horizontal(|ui| {
+                        ui.label("Nickname: ");
+                        if ui.text_edit_singleline(&mut manager.games[manager.selected_game].nickname).lost_focus() {
+                            manager.save_json().expect("Unable to save managerSettings.json");
+                        }
+                    });
                 });
             }
         );
