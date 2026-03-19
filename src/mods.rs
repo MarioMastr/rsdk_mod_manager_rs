@@ -95,6 +95,12 @@ impl Mods {
                     if ui.button("Sonic Mania").clicked() {
                         update_entry(manager, game, Game::SonicMania);
                     }
+                    if ui.button("Sonic 1 Forever").clicked() {
+                        update_entry(manager, game, Game::S1F);
+                    }
+                    if ui.button("Sonic 2 Absolute").clicked() {
+                        update_entry(manager, game, Game::S2A);
+                    }
                 }
             );
         }

@@ -9,6 +9,8 @@ pub enum Game {
     Sonic2,
     SonicCD,
     SonicMania,
+    S1F,
+    S2A,
 
     None,
 }
