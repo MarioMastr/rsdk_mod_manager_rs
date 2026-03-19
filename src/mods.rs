@@ -1,4 +1,4 @@
-use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::{GameSettings, ManagerSettings}};
+use crate::{rsdk::{Game, RSDKInfo}, rsdk_json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
@@ -113,9 +113,11 @@ impl Mods {
 
         ui.separator();
 
+        let height = ui.available_height();
+
         StripBuilder::new(ui)
-            .size(Size::remainder().at_least(100.0))
-            .size(Size::exact(15.0))
+            .size(Size::remainder().at_most(height - 30.0))
+            .size(Size::exact(5.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::horizontal().show(ui, |ui| {

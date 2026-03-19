@@ -1,4 +1,5 @@
 use eframe::egui;
+use egui_extras::{StripBuilder, Size};
 use crate::{rsdk::RSDKInfo, rsdk_json::ManagerSettings};
 
 #[derive(PartialEq)]
@@ -54,9 +55,20 @@ impl Options {
                 );
             }
         }
+
+        let height = ui.available_height();
         
-        if ui.button("Remove Current Game").clicked() {
-            self.show_delete_box = true;
-        }
+        StripBuilder::new(ui)
+            .size(Size::remainder().at_most(height - 8.75))
+            .vertical(|mut strip| {
+                strip.cell(|ui| {
+                    if ui.button("Remove Current Game").clicked() {
+                        self.show_delete_box = true;
+                    }
+                });
+            }
+        );
+
+        ui.separator();
     }
 }

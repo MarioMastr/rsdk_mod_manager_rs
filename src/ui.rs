@@ -51,7 +51,7 @@ impl eframe::App for RMM {
 
             StripBuilder::new(ui)
                 .size(Size::remainder().at_least(100.0))
-                .size(Size::exact(30.0))
+                .size(Size::exact(17.5))
                 .vertical(|mut strip| {
                     strip.cell(|ui| {
                         match self.tabs {
