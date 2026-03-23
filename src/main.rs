@@ -1,13 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 #![expect(rustdoc::missing_crate_level_docs)] // it's an example
 
-pub mod rsdk;
 pub mod ui;
-pub mod mods;
-pub mod options;
-pub mod rsdk_json;
+pub mod core;
 
-use ui::RMM;
 use eframe::egui;
 
 fn main() {
@@ -23,7 +19,7 @@ fn main() {
         "RSDK Mod Manager",
         options,
         Box::new(|cc| {
-            Ok(Box::new(RMM::new(cc)))
+            Ok(Box::new(ui::egui::RMM::new(cc)))
         })
     );
 }

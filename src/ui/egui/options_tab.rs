@@ -1,20 +1,11 @@
 use eframe::egui;
 use egui_extras::{StripBuilder, Size};
-use crate::{rsdk::RSDKInfo, rsdk_json::ManagerSettings};
+use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Default)]
 pub struct Options {
     save_path: String,
     show_delete_box: bool
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Self {
-            save_path: String::new(),
-            show_delete_box: false
-        }
-    }
 }
 
 impl Options {
@@ -25,7 +16,7 @@ impl Options {
                     .collapsible(false)
                     .resizable(false)
                     .show(ui.ctx(), |ui| {
-                        ui.label(format!("At least one game must be added."));
+                        ui.label("At least one game must be added.");
                         ui.add_space(10.0);
                         ui.horizontal(|ui| {
                             if ui.button("OK").clicked() {

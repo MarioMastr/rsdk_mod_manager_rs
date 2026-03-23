@@ -1,11 +1,14 @@
+pub mod mods_tab;
+pub mod options_tab;
+
 use std::path::PathBuf;
 
 use native_dialog::DialogBuilder;
 
-use crate::rsdk_json::ManagerSettings;
-use crate::mods::Mods;
-use crate::options::Options;
-use crate::rsdk::{RSDKInfo, Game};
+use crate::core::json::ManagerSettings;
+use mods_tab::Mods;
+use options_tab::Options;
+use crate::core::rsdk::{RSDKInfo, Game};
 
 use eframe::egui;
 use egui_extras::{Size, StripBuilder};
@@ -100,16 +103,15 @@ impl eframe::App for RMM {
                     .resizable(false)
                     .show(ui.ctx(), |ui| {
                         ui.label("Game executable not found. Please select another executable.");
-                        if ui.button("OK").clicked() {
-                            if let Some(file) = DialogBuilder::file()
-                                .set_location(".")
-                                .add_filter("RSDK Executables", [""])
-                                .set_filename("RSDKv")
-                                .open_single_file()
-                                .show()
-                                .expect("Unable to open file selector") {
-                                    update_entry(&mut self.manager, &mut self.game, file);
-                            }
+                        if ui.button("OK").clicked()
+                        && let Some(file) = DialogBuilder::file()
+                            .set_location(".")
+                            .add_filter("RSDK Executables", [""])
+                            .set_filename("RSDKv")
+                            .open_single_file()
+                            .show()
+                            .expect("Unable to open file selector") {
+                                update_entry(&mut self.manager, &mut self.game, file);
                         }
                     }
                 );

@@ -1,20 +1,14 @@
 use std::{fs::{self, File}, io::Write, path::{Path, PathBuf}};
 use serde::{Deserialize, Serialize};
 
-use crate::rsdk::Game;
+use crate::core::rsdk::Game;
 use native_dialog::DialogBuilder;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct ManagerSettings {
     pub selected_game: usize,
     pub num_games: usize,
     pub games: Vec<GameSettings>,
-}
-
-impl Default for ManagerSettings {
-    fn default() -> Self {
-        Self { selected_game: 0, num_games: 1, games: Vec::new() }
-    }
 }
 
 impl ManagerSettings {
@@ -42,7 +36,7 @@ impl ManagerSettings {
 
             let settings_string = serde_json::to_string_pretty(self)?;
             let mut settings_file = File::create(settings_path)?;
-            settings_file.write(settings_string.as_bytes())?;
+            settings_file.write_all(settings_string.as_bytes())?;
         }
 
         Ok(())
@@ -102,7 +96,7 @@ impl ManagerSettings {
     pub fn save_json(&self) -> Result<(), Box<dyn std::error::Error>> {
         let settings_string = serde_json::to_string_pretty(self)?;
         let mut settings_file = File::create("managerSettings.json")?;
-        settings_file.write(settings_string.as_bytes())?;
+        settings_file.write_all(settings_string.as_bytes())?;
 
         Ok(())
     }

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use ini::Ini;
-use crate::rsdk_json::ManagerSettings;
+use crate::core::json::ManagerSettings;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
@@ -15,7 +15,7 @@ pub enum Game {
     None,
 }
 
-#[derive(PartialEq, Debug , Clone)]
+#[derive(PartialEq, Debug , Clone, Default)]
 pub struct ModInfo {
     pub name: String,
     pub author: String,
@@ -23,12 +23,6 @@ pub struct ModInfo {
     pub description: String,
     pub enabled: bool,
     pub selected: bool
-}
-
-impl Default for ModInfo {
-    fn default() -> Self {
-        Self { name: String::new(), author: String::new(), version: String::new(), description: String::new(), enabled: false, selected: false }
-    }
 }
 
 #[derive(PartialEq)]
@@ -59,18 +53,16 @@ impl RSDKInfo {
             result.path = parent.to_path_buf();
         }
 
-        if let Some(rsdk_name) = game_settings.path.file_name() {
-            if let Some(rsdk_name_str) = rsdk_name.to_str() {
-                result.name = rsdk_name_str.to_string();
-                match rsdk_name_str {
-                    "RSDKv3" => result.rsdk_revision = 3,
-                    "RSDKv4" => result.rsdk_revision = 4,
-                    "RSDKv5" => result.rsdk_revision = 5,
-                    "RSDKv5U" => result.rsdk_revision = 5,
+        if let Some(rsdk_name) = game_settings.path.file_name() && let Some(rsdk_name_str) = rsdk_name.to_str(){
+            result.name = rsdk_name_str.to_string();
+            match rsdk_name_str {
+                "RSDKv3" => result.rsdk_revision = 3,
+                "RSDKv4" => result.rsdk_revision = 4,
+                "RSDKv5" => result.rsdk_revision = 5,
+                "RSDKv5U" => result.rsdk_revision = 5,
 
-                    _ => {}
-                };
-            }
+                _ => {}
+            };
         }
 
         if result.rsdk_revision == 5 && result.game != Game::SonicMania {
