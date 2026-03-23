@@ -4,13 +4,13 @@ use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
 #[derive(PartialEq)]
 pub struct Mods {
-    selected_mod: ModInfo
+    selected_mod_index: Option<usize>
 }
 
 impl Default for Mods {
     fn default() -> Self {
         Self {
-            selected_mod: ModInfo::default()
+            selected_mod_index: None
         }
     }
 }
@@ -25,6 +25,7 @@ impl Mods {
             .resizable(true)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+            .auto_shrink([false; 2])
             .column(Column::remainder())
             .column(Column::auto())
             .column(Column::remainder());
@@ -42,9 +43,12 @@ impl Mods {
                 ui.strong("Version");
             });
         }).body(|mut body| {
-            game.mods.iter_mut().for_each(|mi| {
+            for i in 0..game.mods.len() {
+                let mi = &mut game.mods[i];
                 body.row(text_height, |mut row| {
-                    row.set_selected(mi.selected);
+                    if let Some(index) = self.selected_mod_index {
+                        row.set_selected(index == i);
+                    }
 
                     row.col(|ui| {
                         ui.checkbox(&mut mi.enabled, "");
@@ -57,17 +61,14 @@ impl Mods {
                         ui.label(&mi.version);
                     });
 
-                    self.toggle_row_selection(mi, &row.response());
+                    self.toggle_row_selection(mi, &row.response(), i);
                 });
-
-                if mi.selected {
-                    self.selected_mod = mi.clone();
-                }
-            });
+            }
         });
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
+        let len = game.mods.len();
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
                 if ui.button("Enable All").clicked() {
@@ -79,6 +80,25 @@ impl Mods {
                     game.mods.iter_mut().for_each(|mi| {
                         mi.enabled = false;
                     });
+                }
+                if let Some(index) = self.selected_mod_index {
+                    if len != 1 {
+                        if index != 0 {
+                            if ui.button("Move Up").clicked() {
+                                game.mods.swap(index, index - 1);
+                            }
+                            if ui.button("Move to Top").clicked() {
+                                game.mods.swap(index, 0);
+                            }
+                        } else if index != len {
+                            if ui.button("Move Down").clicked() {
+                                game.mods.swap(index, index + 1);
+                            }
+                            if ui.button("Move to Bottom").clicked() {
+                                game.mods.swap(index, len);
+                            }
+                        }
+                    }
                 }
             });
         });
@@ -108,9 +128,11 @@ impl Mods {
                         if ui.button("New").clicked() {}
                     });
                 });
-                strip.cell(|ui| {
-                    ui.label(format!("Description: {}", self.selected_mod.description));
-                });
+                if let Some(index) = self.selected_mod_index {
+                    strip.cell(|ui| {
+                        ui.label(format!("Description: {}", game.mods[index].description));
+                    });
+                }
                 
             }
         );
@@ -118,9 +140,14 @@ impl Mods {
         ui.separator();
     }
 
-    fn toggle_row_selection(&mut self, mi: &mut ModInfo, row_response: &egui::Response) {
+    fn toggle_row_selection(&mut self, mi: &mut ModInfo, row_response: &egui::Response, i: usize) {
         if row_response.clicked() {
             mi.selected = !mi.selected;
+            if mi.selected {
+                self.selected_mod_index = Some(i);
+            } else {
+                self.selected_mod_index = None;
+            }
         }
     }
 }
