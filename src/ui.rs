@@ -1,4 +1,6 @@
-use std::ops::Index;
+use std::path::PathBuf;
+
+use native_dialog::DialogBuilder;
 
 use crate::rsdk_json::ManagerSettings;
 use crate::mods::Mods;
@@ -81,6 +83,38 @@ impl eframe::App for RMM {
                 );
             }
 
+            if !self.manager.games[self.manager.selected_game].path.exists() {
+                let update_entry = |
+                    manager: &mut ManagerSettings,
+                    game: &mut RSDKInfo,
+                    file: PathBuf
+                | {
+                    let mut game_settings = manager.games[manager.selected_game].clone();
+                    game_settings.path = file;
+                    game_settings.save_entry(manager).expect("Unable to save entry");
+                    game.refresh(manager);
+                };
+
+                egui::Window::new("ERROR")
+                    .collapsible(false)
+                    .resizable(false)
+                    .show(ui.ctx(), |ui| {
+                        ui.label("Game executable not found. Please select another executable.");
+                        if ui.button("OK").clicked() {
+                            if let Some(file) = DialogBuilder::file()
+                                .set_location(".")
+                                .add_filter("RSDK Executables", [""])
+                                .set_filename("RSDKv")
+                                .open_single_file()
+                                .show()
+                                .expect("Unable to open file selector") {
+                                    update_entry(&mut self.manager, &mut self.game, file);
+                            }
+                        }
+                    }
+                );
+            }
+
             ui.horizontal(|ui| {
                 ui.selectable_value(&mut self.tabs, Tabs::Mods, "Mods");
                 ui.selectable_value(&mut self.tabs, Tabs::Options, "Options");
@@ -108,7 +142,7 @@ impl eframe::App for RMM {
                                 .selected_text(&self.manager.games[self.manager.selected_game].nickname)
                                 .show_ui(ui, |ui| {
                                     for n in 0..self.manager.num_games {
-                                        let settings = self.manager.games.index(n);
+                                        let settings = &self.manager.games[n];
                                         if ui.selectable_value(&mut self.manager.selected_game, n, &settings.nickname).changed() {
                                             self.game.refresh(&self.manager);
                                             self.manager.save_json().expect("Unable to save managerSettings.json");
