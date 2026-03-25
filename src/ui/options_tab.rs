@@ -4,7 +4,6 @@ use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 
 #[derive(PartialEq, Default)]
 pub struct Options {
-    save_path: String,
     show_delete_box: bool
 }
 
