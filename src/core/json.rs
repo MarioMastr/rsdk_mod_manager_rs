@@ -42,7 +42,7 @@ impl ManagerSettings {
 
             let settings_string = serde_json::to_string_pretty(self)?;
             let mut settings_file = File::create(settings_path)?;
-            settings_file.write(settings_string.as_bytes())?;
+            settings_file.write_all(settings_string.as_bytes())?;
         }
 
         Ok(())
@@ -102,7 +102,7 @@ impl ManagerSettings {
     pub fn save_json(&self) -> Result<(), Box<dyn std::error::Error>> {
         let settings_string = serde_json::to_string_pretty(self)?;
         let mut settings_file = File::create("managerSettings.json")?;
-        settings_file.write(settings_string.as_bytes())?;
+        settings_file.write_all(settings_string.as_bytes())?;
 
         Ok(())
     }

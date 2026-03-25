@@ -101,16 +101,14 @@ impl eframe::App for RMM {
                     .resizable(false)
                     .show(ui.ctx(), |ui| {
                         ui.label("Game executable not found. Please select another executable.");
-                        if ui.button("OK").clicked() {
-                            if let Some(file) = DialogBuilder::file()
-                                .set_location(".")
-                                .add_filter("RSDK Executables", [""])
-                                .set_filename("RSDKv")
-                                .open_single_file()
-                                .show()
-                                .expect("Unable to open file selector") {
-                                    update_entry(&mut self.manager, &mut self.game, file);
-                            }
+                        if ui.button("OK").clicked() && let Some(file) = DialogBuilder::file()
+                            .set_location(".")
+                            .add_filter("RSDK Executables", [""])
+                            .set_filename("RSDKv")
+                            .open_single_file()
+                            .show()
+                            .expect("Unable to open file selector") {
+                                update_entry(&mut self.manager, &mut self.game, file);
                         }
                     }
                 );

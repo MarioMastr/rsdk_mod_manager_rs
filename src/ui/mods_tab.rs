@@ -2,17 +2,9 @@ use crate::core::{rsdk::{ ModInfo, RSDKInfo}, json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Default)]
 pub struct Mods {
     selected_mod_index: Option<usize>
-}
-
-impl Default for Mods {
-    fn default() -> Self {
-        Self {
-            selected_mod_index: None
-        }
-    }
 }
 
 impl Mods {
@@ -67,7 +59,7 @@ impl Mods {
         });
     }
 
-    pub fn ui(&mut self, ui: &mut egui::Ui, mut game: &mut RSDKInfo, manager: &mut ManagerSettings) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
         let len = game.mods.len();
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
@@ -81,22 +73,20 @@ impl Mods {
                         mi.enabled = false;
                     });
                 }
-                if let Some(index) = self.selected_mod_index {
-                    if len != 1 {
-                        if index != 0 {
-                            if ui.button("Move Up").clicked() {
-                                game.mods.swap(index, index - 1);
-                            }
-                            if ui.button("Move to Top").clicked() {
-                                game.mods.swap(index, 0);
-                            }
-                        } else if index != len {
-                            if ui.button("Move Down").clicked() {
-                                game.mods.swap(index, index + 1);
-                            }
-                            if ui.button("Move to Bottom").clicked() {
-                                game.mods.swap(index, len);
-                            }
+                if let Some(index) = self.selected_mod_index && len != 1 {
+                    if index != 0 {
+                        if ui.button("Move Up").clicked() {
+                            game.mods.swap(index, index - 1);
+                        }
+                        if ui.button("Move to Top").clicked() {
+                            game.mods.swap(index, 0);
+                        }
+                    } else if index != len {
+                        if ui.button("Move Down").clicked() {
+                            game.mods.swap(index, index + 1);
+                        }
+                        if ui.button("Move to Bottom").clicked() {
+                            game.mods.swap(index, len);
                         }
                     }
                 }
@@ -114,7 +104,7 @@ impl Mods {
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::horizontal().show(ui, |ui| {
-                        self.table_ui(ui, &mut game);
+                        self.table_ui(ui, game);
                     });
                 });
                 strip.cell(|ui| {
