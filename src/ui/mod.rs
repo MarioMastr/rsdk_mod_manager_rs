@@ -28,7 +28,7 @@ pub struct RMM {
 }
 
 impl RMM {
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
         // Restore app state using cc.storage (requires the "persistence" feature).
         // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
@@ -37,6 +37,8 @@ impl RMM {
 
         this.manager = ManagerSettings::read_json().expect("Unable to read/create managerSettings.json");
         this.game = RSDKInfo::get(&this.manager).expect("Unable to get information on selected game");
+
+        cc.egui_ctx.options_mut(|a| a.theme_preference = egui::ThemePreference::System);
 
         this
     }
