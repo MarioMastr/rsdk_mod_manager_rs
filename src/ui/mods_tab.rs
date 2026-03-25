@@ -1,4 +1,4 @@
-use crate::{rsdk::{ ModInfo, RSDKInfo}, rsdk_json::ManagerSettings};
+use crate::core::{rsdk::{ ModInfo, RSDKInfo}, json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 

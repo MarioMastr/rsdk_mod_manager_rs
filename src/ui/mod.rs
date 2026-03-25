@@ -1,11 +1,12 @@
-use std::path::PathBuf;
+pub mod mods_tab;
+pub mod options_tab;
 
+use std::path::PathBuf;
 use native_dialog::DialogBuilder;
 
-use crate::rsdk_json::ManagerSettings;
-use crate::mods::Mods;
-use crate::options::Options;
-use crate::rsdk::{RSDKInfo, Game};
+use crate::core::{json::ManagerSettings, rsdk::{RSDKInfo, Game}};
+use mods_tab::Mods;
+use options_tab::Options;
 
 use eframe::egui;
 use egui_extras::{Size, StripBuilder};

@@ -1,11 +1,5 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
-#![expect(rustdoc::missing_crate_level_docs)] // it's an example
-
-pub mod rsdk;
+pub mod core;
 pub mod ui;
-pub mod mods;
-pub mod options;
-pub mod rsdk_json;
 
 use ui::RMM;
 use eframe::egui;

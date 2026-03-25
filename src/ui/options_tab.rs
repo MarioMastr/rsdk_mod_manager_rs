@@ -1,6 +1,6 @@
 use eframe::egui;
 use egui_extras::{StripBuilder, Size};
-use crate::{rsdk::RSDKInfo, rsdk_json::ManagerSettings};
+use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 
 #[derive(PartialEq)]
 pub struct Options {

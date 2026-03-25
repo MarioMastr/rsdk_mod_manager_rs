@@ -1,7 +1,7 @@
 use std::{fs::{self, File}, io::Write, path::{Path, PathBuf}};
 use serde::{Deserialize, Serialize};
 
-use crate::rsdk::Game;
+use crate::core::rsdk::Game;
 use native_dialog::DialogBuilder;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

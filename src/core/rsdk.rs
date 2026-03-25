@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use ini::Ini;
-use crate::rsdk_json::ManagerSettings;
+use crate::core::json::ManagerSettings;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
