@@ -25,7 +25,7 @@ pub struct ModInfo {
     pub selected: bool
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct RSDKInfo {
     pub rsdk_revision: u8,
     pub game: Game,

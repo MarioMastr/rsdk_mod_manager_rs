@@ -1,25 +1,33 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
-#![expect(rustdoc::missing_crate_level_docs)] // it's an example
+#[cfg(all(feature = "iced", feature = "egui"))]
+compile_error!("Iced GUI and egui GUI cannot be compiled together");
 
 pub mod ui;
 pub mod core;
 
-use eframe::egui;
-
 fn main() {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([666.0, 585.0])
-            .with_min_inner_size([666.0, 585.0]),
+    env_logger::init();
 
-        ..Default::default()
-    };
-    let _ = eframe::run_native(
-        "RSDK Mod Manager",
-        options,
-        Box::new(|cc| {
-            Ok(Box::new(ui::egui::RMM::new(cc)))
-        })
-    );
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "egui")] {
+            let options = eframe::NativeOptions {
+                viewport: eframe::egui::ViewportBuilder::default()
+                    .with_inner_size([666.0, 585.0])
+                    .with_min_inner_size([666.0, 585.0]),
+
+                ..Default::default()
+            };
+            let _ = eframe::run_native(
+                "RSDK Mod Manager",
+                options,
+                Box::new(|cc| {
+                    Ok(Box::new(ui::egui::RMM::new(cc)))
+                })
+            );
+        } else if #[cfg(feature = "iced")] {
+            iced::application(ui::iced::RMM::new, ui::iced::RMM::update, ui::iced::RMM::view)
+                .theme(iced::Theme::CatppuccinMocha)
+                .title(ui::iced::RMM::title)
+                .run().expect("Unable to run application");
+        }
+    }
 }
