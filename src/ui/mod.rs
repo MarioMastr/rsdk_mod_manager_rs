@@ -157,7 +157,15 @@ impl eframe::App for RMM {
                             );
                             if ui.button("Save & Play").clicked() {
                                 self.game.save().expect("Unable to save changes");
-                                std::process::Command::new("./".to_owned() + &self.game.name)
+
+#[cfg(target_os = "macos")]
+                                let program = "./".to_owned() + &self.game.name.to_owned() + ".app/Contents/MacOS/" + &self.game.name.to_owned();
+#[cfg(target_os = "windows")]
+                                let program = "./".to_owned() + &self.game.name + ".exe";
+#[cfg(target_os = "linux")]
+                                let program = "./".to_owned() + &self.game.name;
+
+                                std::process::Command::new(program)
                                     .current_dir(&self.game.path)
                                     .output()
                                     .expect("Unable to launch game");

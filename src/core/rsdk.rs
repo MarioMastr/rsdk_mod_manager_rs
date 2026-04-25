@@ -53,7 +53,7 @@ impl RSDKInfo {
             result.path = parent.to_path_buf();
         }
 
-        if let Some(rsdk_name) = game_settings.path.file_name() && let Some(rsdk_name_str) = rsdk_name.to_str() {
+        if let Some(rsdk_name) = game_settings.path.file_prefix() && let Some(rsdk_name_str) = rsdk_name.to_str() {
             result.name = rsdk_name_str.to_string();
             match rsdk_name_str {
                 "RSDKv3" => result.rsdk_revision = 3,
@@ -114,13 +114,15 @@ impl RSDKInfo {
                     temp.description = description.to_string();
                 }
 
-                temp.enabled = modconfig_section.get(&temp.name).unwrap() == (
-                    if self.rsdk_revision == 5 {
-                        "y"
-                    } else {
-                        "true"
-                    }
-                );
+                if let Some(modconfig_key) = modconfig_section.get(&temp.name) {
+                    temp.enabled = modconfig_key == (
+                        if self.rsdk_revision == 5 {
+                            "y"
+                        } else {
+                            "true"
+                        }
+                    );
+                }
 
                 result.push(temp);
             };
