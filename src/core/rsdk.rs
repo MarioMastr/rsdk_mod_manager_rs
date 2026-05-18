@@ -1,7 +1,9 @@
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 use ini::Ini;
+use native_dialog::DialogBuilder;
 use crate::core::json::ManagerSettings;
 use serde::{Deserialize, Serialize};
+use archive::{ArchiveExtractor, ArchiveFormat};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Game {
@@ -13,6 +15,20 @@ pub enum Game {
     S2A,
 
     None,
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Game::None
+    }
+}
+
+#[derive(PartialEq, Default, Clone, Copy)]
+pub enum NewMod {
+    #[default]
+    Archive,
+    Folder,
+    Scratch
 }
 
 #[derive(PartialEq, Debug , Clone, Default)]
@@ -44,7 +60,7 @@ impl Default for RSDKInfo {
 impl RSDKInfo {
     pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn std::error::Error>> {
         let mut result = RSDKInfo::default();
-        
+
         let game_settings = &manager_settings.games[manager_settings.selected_game];
 
         result.game = game_settings.name;
@@ -68,7 +84,7 @@ impl RSDKInfo {
         if result.rsdk_revision == 5 && result.game != Game::SonicMania {
             result.legacy = true;
         }
-    
+
         result.mods = result.get_mods()?;
 
         Ok(result)
@@ -164,6 +180,48 @@ impl RSDKInfo {
         }
 
         modconfig_ini_new.write_to_file(modconfig_ini_path)?;
+
+        Ok(())
+    }
+
+    pub fn new_mod(
+        &mut self,
+        method: NewMod,
+        _name: Option<String>,
+        _desc: Option<String>,
+        _ver: Option<String>
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        match method {
+            NewMod::Archive => {
+                if let Some(archive) = DialogBuilder::file()
+                    .set_location(".")
+                    .add_filter("Mod Archives", ["zip", "7z"])
+                    .open_single_file()
+                    .show()
+                    .expect("Unable to open file selector") {
+                        let mut format: ArchiveFormat = ArchiveFormat::Zip;
+                        let extension = archive.extension().unwrap();
+                        if extension == "zip" {
+                            format = ArchiveFormat::Zip;
+                        } else if extension == "7z" {
+                            format = ArchiveFormat::SevenZ;
+                        }
+
+                        let data = std::fs::read(archive)?;
+                        let extractor = ArchiveExtractor::new();
+                        let files = extractor.extract(&data, format)?;
+
+                        let mods_directory = self.path.join("mods");
+
+                        for file in files {
+                            let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
+                            desired_file.write_all(&file.data)?;
+                        }
+                }
+            },
+            NewMod::Folder => {},
+            NewMod::Scratch => {},
+        }
 
         Ok(())
     }

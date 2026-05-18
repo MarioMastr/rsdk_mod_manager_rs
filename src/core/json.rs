@@ -108,17 +108,11 @@ impl ManagerSettings {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct GameSettings {
     pub nickname: String,
     pub path: PathBuf,
     pub name: Game,
-}
-
-impl Default for GameSettings {
-    fn default() -> Self {
-        Self { nickname: String::new(), path: Default::default(), name: Game::None }
-    }
 }
 
 impl GameSettings {

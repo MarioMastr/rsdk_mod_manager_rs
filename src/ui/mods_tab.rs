@@ -1,10 +1,12 @@
-use crate::core::{rsdk::{ ModInfo, RSDKInfo}, json::ManagerSettings};
+use crate::core::{rsdk::{ModInfo, RSDKInfo, NewMod}, json::ManagerSettings};
 use eframe::egui;
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
 #[derive(PartialEq, Default)]
 pub struct Mods {
-    selected_mod_index: Option<usize>
+    selected_mod_index: Option<usize>,
+    show_new_window: bool,
+    new_mod_option: NewMod
 }
 
 impl Mods {
@@ -60,6 +62,33 @@ impl Mods {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
+        let mut new_scratch_window = false;
+        if self.show_new_window {
+            egui::Window::new("New Mod")
+                .collapsible(false)
+                .resizable(false)
+                .show(ui.ctx(), |ui| {
+                    if new_scratch_window {
+
+                    } else {
+                        ui.label("Select option:");
+                        ui.add_space(10.0);
+                        ui.radio_value(&mut self.new_mod_option, NewMod::Archive, "From Archive");
+                        ui.radio_value(&mut self.new_mod_option, NewMod::Folder, "From Folder");
+                        ui.radio_value(&mut self.new_mod_option, NewMod::Scratch, "From Scratch (for developers)");
+                        ui.add_space(10.0);
+                        if ui.button("OK").clicked() {
+                            if self.new_mod_option == NewMod::Scratch {
+                                new_scratch_window = true;
+                            } else {
+                                game.new_mod(self.new_mod_option, None, None, None).expect("Unable to add mod");
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
         let len = game.mods.len();
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
@@ -115,7 +144,9 @@ impl Mods {
 
                         ui.add_space(ui.available_width() - 34.0);
 
-                        if ui.button("New").clicked() {}
+                        if ui.button("New").clicked() {
+                            self.show_new_window = true;
+                        }
                     });
                 });
                 if let Some(index) = self.selected_mod_index {
