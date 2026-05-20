@@ -6,6 +6,7 @@ use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 pub struct Mods {
     selected_mod_index: Option<usize>,
     show_new_window: bool,
+    show_new_scratch_window: bool,
     new_mod_option: NewMod
 }
 
@@ -62,32 +63,36 @@ impl Mods {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
-        let mut new_scratch_window = false;
-        if self.show_new_window {
-            egui::Window::new("New Mod")
-                .collapsible(false)
-                .resizable(false)
-                .show(ui.ctx(), |ui| {
-                    if new_scratch_window {
-
+        egui::Window::new("New Mod")
+            .collapsible(false)
+            .resizable(false)
+            .open(&mut self.show_new_window)
+            .show(ui.ctx(), |ui| {
+                ui.label("Select option:");
+                ui.add_space(10.0);
+                ui.radio_value(&mut self.new_mod_option, NewMod::Archive, "From Archive");
+                ui.radio_value(&mut self.new_mod_option, NewMod::Folder, "From Folder");
+                ui.radio_value(&mut self.new_mod_option, NewMod::Scratch, "From Scratch (for developers)");
+                ui.add_space(10.0);
+                if ui.button("OK").clicked() {
+                    if self.new_mod_option == NewMod::Scratch {
+                        self.show_new_scratch_window = true;
                     } else {
-                        ui.label("Select option:");
-                        ui.add_space(10.0);
-                        ui.radio_value(&mut self.new_mod_option, NewMod::Archive, "From Archive");
-                        ui.radio_value(&mut self.new_mod_option, NewMod::Folder, "From Folder");
-                        ui.radio_value(&mut self.new_mod_option, NewMod::Scratch, "From Scratch (for developers)");
-                        ui.add_space(10.0);
-                        if ui.button("OK").clicked() {
-                            if self.new_mod_option == NewMod::Scratch {
-                                new_scratch_window = true;
-                            } else {
-                                game.new_mod(self.new_mod_option, None, None, None).expect("Unable to add mod");
-                            }
-                        }
+                        game.new_mod(self.new_mod_option, None, None, None).expect("Unable to add mod");
+                        game.refresh(manager);
                     }
                 }
-            );
-        }
+            }
+        );
+
+        egui::Window::new("ERROR")
+            .collapsible(false)
+            .resizable(false)
+            .open(&mut self.show_new_scratch_window)
+            .show(ui.ctx(), |ui| {
+                ui.label("Option not implemented yet; will come in future update.");
+            }
+        );
 
         let len = game.mods.len();
         ui.vertical(|ui| {

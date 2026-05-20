@@ -1,7 +1,6 @@
 pub mod mods_tab;
 pub mod options_tab;
 
-use std::path::PathBuf;
 use native_dialog::DialogBuilder;
 
 use crate::core::{json::ManagerSettings, rsdk::{RSDKInfo, Game}};
@@ -87,17 +86,6 @@ impl eframe::App for RMM {
             }
 
             if !self.manager.games[self.manager.selected_game].path.exists() {
-                let update_entry = |
-                    manager: &mut ManagerSettings,
-                    game: &mut RSDKInfo,
-                    file: PathBuf
-                | {
-                    let mut game_settings = manager.games[manager.selected_game].clone();
-                    game_settings.path = file;
-                    game_settings.save_entry(manager).expect("Unable to save entry");
-                    game.refresh(manager);
-                };
-
                 egui::Window::new("ERROR")
                     .collapsible(false)
                     .resizable(false)
@@ -109,8 +97,14 @@ impl eframe::App for RMM {
                             .set_filename("RSDKv")
                             .open_single_file()
                             .show()
-                            .expect("Unable to open file selector") {
-                                update_entry(&mut self.manager, &mut self.game, file);
+                            .expect("Unable to open file selector")
+                        {
+                            let manager = &mut self.manager;
+                            let game = &mut self.game;
+                            let mut game_settings = manager.games[manager.selected_game].clone();
+                            game_settings.path = file;
+                            game_settings.save_entry(manager).expect("Unable to save entry");
+                            game.refresh(manager);
                         }
                     }
                 );

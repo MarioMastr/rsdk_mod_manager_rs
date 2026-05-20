@@ -5,7 +5,7 @@ use crate::core::json::ManagerSettings;
 use serde::{Deserialize, Serialize};
 use archive::{ArchiveExtractor, ArchiveFormat};
 
-#[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub enum Game {
     Sonic1,
     Sonic2,
@@ -14,13 +14,8 @@ pub enum Game {
     S1F,
     S2A,
 
+    #[default]
     None,
-}
-
-impl Default for Game {
-    fn default() -> Self {
-        Game::None
-    }
 }
 
 #[derive(PartialEq, Default, Clone, Copy)]
@@ -219,7 +214,19 @@ impl RSDKInfo {
                         }
                 }
             },
-            NewMod::Folder => {},
+            NewMod::Folder => {
+                if let Some(folder) = DialogBuilder::file()
+                    .set_location(".")
+                    .open_single_dir()
+                    .show()
+                    .expect("Unable to open file selector") {
+                        let mods_directory = self.path.join("mods");
+                        if let Some(name) = folder.file_name() {
+                            let desired_mod_dir = mods_directory.join(name);
+                            std::fs::rename(folder, desired_mod_dir)?;
+                        }
+                }
+            },
             NewMod::Scratch => {},
         }
 
