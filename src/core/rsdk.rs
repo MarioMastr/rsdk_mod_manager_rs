@@ -130,6 +130,11 @@ impl RSDKInfo {
                     );
                 }
 
+                if let Some(entry_name) = entry.file_name().to_str() && entry_name != temp.name {
+                    let new_entry = mods_path.join(&temp.name);
+                    std::fs::rename(entry.path(), new_entry)?;
+                }
+
                 result.push(temp);
             };
         }
