@@ -9,6 +9,7 @@ use options_tab::Options;
 
 use eframe::egui;
 use egui_extras::{Size, StripBuilder};
+use egui_async::Bind;
 
 #[derive(Default, PartialEq)]
 enum Tabs {
@@ -24,6 +25,8 @@ pub struct RMM {
     options: Options,
     game: RSDKInfo,
     manager: ManagerSettings,
+    my_ip: Bind<(), String>,
+    uri_present: bool
 }
 
 impl RMM {
@@ -40,8 +43,33 @@ impl RMM {
 }
 
 impl eframe::App for RMM {
-   fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.plugin_or_default::<egui_async::EguiAsyncPlugin>();
+
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() == 2 {
+            self.uri_present = true;
+        }
+    }
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
+            if self.uri_present {
+                if let Some(res) = self.my_ip.read_or_request(|| async {
+                    let args: Vec<String> = std::env::args().collect();
+                    crate::core::web::gamebanana_uri_handler(&args[1]).await.map_err(|e| e.to_string())
+                }) {
+                    match res {
+                        Ok(_)  => {
+                            self.game.refresh(&self.manager);
+                            ui.label("Mod download completed")
+                        },
+                        Err(err) => ui.colored_label(egui::Color32::RED, err),
+                    };
+                } else {
+                    ui.spinner();
+                }
+            }
+
             if self.game.game == Game::None {
                 let update_entry = |
                     manager: &mut ManagerSettings,

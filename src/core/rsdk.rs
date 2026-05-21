@@ -31,6 +31,7 @@ pub enum NewMod {
 #[derive(PartialEq, Debug , Clone, Default)]
 pub struct ModInfo {
     pub name: String,
+    pub id: String,
     pub author: String,
     pub version: String,
     pub description: String,
@@ -114,7 +115,8 @@ impl RSDKInfo {
 
                 let section = mod_ini.section(None::<String>).unwrap();
 
-                temp.name = section.get("Name").unwrap().to_string();
+                temp.name = entry.file_name().into_string().unwrap();
+                temp.id = section.get("Name").unwrap().to_string(); 
                 temp.author = section.get("Author").unwrap().to_string();
                 temp.version = section.get("Version").unwrap().to_string();
 
@@ -130,11 +132,6 @@ impl RSDKInfo {
                             "true"
                         }
                     );
-                }
-
-                if let Some(entry_name) = entry.file_name().to_str() && entry_name != temp.name {
-                    let new_entry = mods_path.join(&temp.name);
-                    std::fs::rename(entry.path(), new_entry)?;
                 }
 
                 result.push(temp);
@@ -169,7 +166,7 @@ impl RSDKInfo {
         let mut section = modconfig_ini_new.with_section(Some(mods_text));
 
         for mi in &self.mods {
-            section.set(&mi.name, if mi.enabled {
+            section.set(&mi.id, if mi.enabled {
                 enabled_text
             } else {
                 disabled_text
@@ -211,8 +208,13 @@ impl RSDKInfo {
                         let mods_directory = self.path.join("mods");
 
                         for file in files {
-                            let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
-                            desired_file.write_all(&file.data)?;
+                            if file.is_directory {
+                                let dest = mods_directory.join(&file.path);
+                                std::fs::create_dir(dest)?;
+                            } else {
+                                let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
+                                desired_file.write_all(&file.data)?;
+                            }
                         }
                 }
             },
@@ -260,7 +262,47 @@ impl RSDKInfo {
             return Err("Game for mod does not match selected game".into());
         }
 
+        let temp_path = std::env::current_dir()?.join("temp");
+        let path = temp_path.join("mod.zip");
+
         web::download_handler(url, "mod.zip").await?;
+
+        let data = std::fs::read(&path)?;
+        let extractor = ArchiveExtractor::new();
+        let mut files_res = extractor.extract(&data, ArchiveFormat::Zip);
+
+        if files_res.is_err() {
+            files_res = extractor.extract(&data, ArchiveFormat::SevenZ);
+        }
+
+        let files = files_res?;
+
+        let mods_directory = self.path.join("mods");
+
+        // we pass through twice, handling directories and then non-directories to prevent errors
+        for file in &files {
+            if file.is_directory {
+                let dest = mods_directory.join(&file.path);
+                if !dest.exists() {
+                    std::fs::create_dir(dest)?;
+                } else {
+                    return Err("Mod already exists".into());
+                }
+            } else {
+                continue;
+            }
+        }
+
+        for file in files {
+            if !file.is_directory {
+                let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
+                desired_file.write_all(&file.data)?;
+            } else {
+                continue;
+            }
+        }
+
+        std::fs::remove_dir_all(temp_path)?;
 
         Ok(())
     }

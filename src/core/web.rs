@@ -3,7 +3,6 @@ use crate::core::json::ManagerSettings;
 
 use std::fs::File;
 use std::io::Write;
-use std::cmp::min;
 
 use futures_util::StreamExt;
 
@@ -39,18 +38,15 @@ pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn std::
     }
 
     let path = temp_path.join(name);
-    let mut file = File::create(path)?;
 
-    let total_size = res.content_length().ok_or(format!("Failed to get content length from '{}'", &url))?;
-    let mut downloaded: u64 = 0;
+    // download chunks
+    let mut file = File::create(&path).or(Err(format!("Failed to create file '{}'", path.display())))?;
     let mut stream = res.bytes_stream();
 
     while let Some(item) = stream.next().await {
         let chunk = item.or(Err("Error while downloading file"))?;
         file.write_all(&chunk)
             .or(Err("Error while writing to file"))?;
-        let new = min(downloaded + (chunk.len() as u64), total_size);
-        downloaded = new;
     }
 
     Ok(())
