@@ -28,10 +28,6 @@ pub struct RMM {
 
 impl RMM {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
-        // Restore app state using cc.storage (requires the "persistence" feature).
-        // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
-        // for e.g. egui::PaintCallback.#
         let mut this = Self::default();
 
         this.manager = ManagerSettings::read_json().expect("Unable to read/create managerSettings.json");
@@ -76,10 +72,10 @@ impl eframe::App for RMM {
                             update_entry(&mut self.manager, &mut self.game, Game::SonicMania);
                         }
                         if ui.button("Sonic 1 Forever").clicked() {
-                            update_entry(&mut self.manager, &mut self.game, Game::S1F);
+                            update_entry(&mut self.manager, &mut self.game, Game::Sonic1Forever);
                         }
                         if ui.button("Sonic 2 Absolute").clicked() {
-                            update_entry(&mut self.manager, &mut self.game, Game::S2A);
+                            update_entry(&mut self.manager, &mut self.game, Game::Sonic2Absolute);
                         }
                     }
                 );

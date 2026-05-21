@@ -1,9 +1,11 @@
 use std::{io::Write, path::PathBuf};
 use ini::Ini;
 use native_dialog::DialogBuilder;
-use crate::core::json::ManagerSettings;
 use serde::{Deserialize, Serialize};
 use archive::{ArchiveExtractor, ArchiveFormat};
+
+use crate::core::json::ManagerSettings;
+use crate::core::web::{self, GameBananaURIs};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub enum Game {
@@ -11,8 +13,8 @@ pub enum Game {
     Sonic2,
     SonicCD,
     SonicMania,
-    S1F,
-    S2A,
+    Sonic1Forever,
+    Sonic2Absolute,
 
     #[default]
     None,
@@ -23,7 +25,7 @@ pub enum NewMod {
     #[default]
     Archive,
     Folder,
-    Scratch
+    Scratch,
 }
 
 #[derive(PartialEq, Debug , Clone, Default)]
@@ -184,7 +186,7 @@ impl RSDKInfo {
         method: NewMod,
         _name: Option<String>,
         _desc: Option<String>,
-        _ver: Option<String>
+        _ver: Option<String>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         match method {
             NewMod::Archive => {
@@ -194,7 +196,7 @@ impl RSDKInfo {
                     .open_single_file()
                     .show()
                     .expect("Unable to open file selector") {
-                        let mut format: ArchiveFormat = ArchiveFormat::Zip;
+                        let mut format = ArchiveFormat::Zip;
                         let extension = archive.extension().unwrap();
                         if extension == "zip" {
                             format = ArchiveFormat::Zip;
@@ -229,6 +231,36 @@ impl RSDKInfo {
             },
             NewMod::Scratch => {},
         }
+
+        Ok(())
+    }
+
+    pub async fn new_mod_online(
+        &mut self,
+        code: &str,
+        url: &str
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let mut mod_game: Game = Game::None;
+
+        if code == GameBananaURIs::Sonic1.as_str() {
+            mod_game = Game::Sonic1;
+        } else if code == GameBananaURIs::Sonic2.as_str() {
+            mod_game = Game::Sonic2;
+        } else if code == GameBananaURIs::SonicCD.as_str(){
+            mod_game = Game::SonicCD;
+        } else if code == GameBananaURIs::SonicMania.as_str() {
+            mod_game = Game::SonicMania;
+        } else if code == GameBananaURIs::Sonic1Forever.as_str() {
+            mod_game = Game::Sonic1Forever;
+        } else if code == GameBananaURIs::Sonic2Absolute.as_str() {
+            mod_game = Game::Sonic2Absolute;
+        }
+
+        if mod_game != self.game {
+            return Err("Game for mod does not match selected game".into());
+        }
+
+        web::download_handler(url, "mod.zip").await?;
 
         Ok(())
     }
