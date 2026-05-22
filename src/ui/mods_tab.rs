@@ -1,5 +1,5 @@
 use crate::core::{rsdk::{ModInfo, RSDKInfo, NewMod}, json::ManagerSettings};
-use eframe::egui;
+use eframe::egui::{self, UiKind};
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
 #[derive(PartialEq, Default)]
@@ -7,6 +7,7 @@ pub struct Mods {
     selected_mod_index: Option<usize>,
     show_new_window: bool,
     show_new_scratch_window: bool,
+    show_remove_window: bool,
     new_mod_option: NewMod
 }
 
@@ -94,6 +95,21 @@ impl Mods {
             }
         );
 
+        egui::Window::new("Remove")
+            .collapsible(false)
+            .resizable(false)
+            .open(&mut self.show_remove_window)
+            .show(ui, |ui| {
+                ui.label(format!("Are you sure you want to remove {}?", game.mods[self.selected_mod_index.unwrap()].name));
+                ui.add_space(10.0);
+                if ui.button("YES").clicked() {
+                    game.remove_mod(self.selected_mod_index.unwrap()).expect("Unable to remove mod");
+                    game.refresh(manager);
+                    ui.close_kind(UiKind::Window);
+                }
+            }
+        );
+
         let len = game.mods.len();
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
@@ -111,17 +127,25 @@ impl Mods {
                     if index != 0 {
                         if ui.button("Move Up").clicked() {
                             game.mods.swap(index, index - 1);
+                            self.selected_mod_index = Some(index - 1);
                         }
                         if ui.button("Move to Top").clicked() {
                             game.mods.swap(index, 0);
+                            self.selected_mod_index = Some(0);
                         }
-                    } else if index != len {
+                    }
+                    if index != (len - 1) {
                         if ui.button("Move Down").clicked() {
                             game.mods.swap(index, index + 1);
+                            self.selected_mod_index = Some(index + 1);
                         }
                         if ui.button("Move to Bottom").clicked() {
                             game.mods.swap(index, len);
+                            self.selected_mod_index = Some(len - 1);
                         }
+                    }
+                    if ui.button("Remove").clicked() {
+                        self.show_remove_window = true;
                     }
                 }
             });

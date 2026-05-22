@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::egui::{self, UiKind};
 use egui_extras::{StripBuilder, Size};
 use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 
@@ -9,41 +9,41 @@ pub struct Options {
 
 impl Options {
     pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
-        if self.show_delete_box {
-            if manager.num_games == 1 {
-                egui::Window::new("ERROR")
-                    .collapsible(false)
-                    .resizable(false)
-                    .show(ui.ctx(), |ui| {
-                        ui.label("At least one game must be added.");
-                        ui.add_space(10.0);
-                        ui.horizontal(|ui| {
-                            if ui.button("OK").clicked() {
-                                self.show_delete_box = false;
-                            }
-                        });
-                    }
-                );
-            } else {
-                egui::Window::new("Remove Game")
-                    .collapsible(false)
-                    .resizable(false)
-                    .show(ui.ctx(), |ui| {
-                        ui.label(format!("Are you sure you want to remove {:?}?", manager.games[manager.selected_game].nickname));
-                        ui.add_space(10.0);
-                        ui.horizontal(|ui| {
-                            if ui.button("Yes").clicked() {
-                                manager.remove_entry().expect("Unable to remove entry");
-                                game.refresh(manager);
-                                self.show_delete_box = false;
-                            }
-                            if ui.button("No").clicked() {
-                                self.show_delete_box = false;
-                            }
-                        });
-                    }
-                );
-            }
+        if manager.num_games == 1 {
+            egui::Window::new("ERROR")
+                .collapsible(false)
+                .resizable(false)
+                .open(&mut self.show_delete_box)
+                .show(ui.ctx(), |ui| {
+                    ui.label("At least one game must be added.");
+                    ui.add_space(10.0);
+                    ui.horizontal(|ui| {
+                        if ui.button("OK").clicked() {
+                            ui.close_kind(UiKind::Window);
+                        }
+                    });
+                }
+            );
+        } else {
+            egui::Window::new("Remove Game")
+                .collapsible(false)
+                .resizable(false)
+                .open(&mut self.show_delete_box)
+                .show(ui.ctx(), |ui| {
+                    ui.label(format!("Are you sure you want to remove {:?}?", manager.games[manager.selected_game].nickname));
+                    ui.add_space(10.0);
+                    ui.horizontal(|ui| {
+                        if ui.button("Yes").clicked() {
+                            manager.remove_entry().expect("Unable to remove entry");
+                            game.refresh(manager);
+                            ui.close_kind(UiKind::Window);
+                        }
+                        if ui.button("No").clicked() {
+                            ui.close_kind(UiKind::Window);
+                        }
+                    });
+                }
+            );
         }
 
         let height = ui.available_height();

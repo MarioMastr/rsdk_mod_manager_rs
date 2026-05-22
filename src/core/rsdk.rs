@@ -288,8 +288,6 @@ impl RSDKInfo {
                 } else {
                     return Err("Mod already exists".into());
                 }
-            } else {
-                continue;
             }
         }
 
@@ -297,12 +295,20 @@ impl RSDKInfo {
             if !file.is_directory {
                 let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
                 desired_file.write_all(&file.data)?;
-            } else {
-                continue;
             }
         }
 
         std::fs::remove_dir_all(temp_path)?;
+
+        Ok(())
+    }
+
+    pub fn remove_mod(&mut self, selected_mod: usize) -> Result<(), Box<dyn std::error::Error>> {
+        let mod_info = &self.mods[selected_mod];
+        let mods_directory = self.path.join("mods");
+        let dir_to_del = mods_directory.join(&mod_info.name);
+
+        std::fs::remove_dir_all(dir_to_del)?;
 
         Ok(())
     }
