@@ -111,6 +111,10 @@ impl RSDKInfo {
                 }
 
                 let mod_ini_path = entry.path().join("mod.ini");
+                if !mod_ini_path.exists() {
+                    continue;
+                }
+
                 let mod_ini = Ini::load_from_file(mod_ini_path)?;
 
                 let section = mod_ini.section(None::<String>).unwrap();
@@ -207,12 +211,21 @@ impl RSDKInfo {
 
                         let mods_directory = self.path.join("mods");
 
-                        for file in files {
+                        // we pass through twice, handling directories and then non-directories to prevent errors
+                        for file in &files {
                             if file.is_directory {
                                 let dest = mods_directory.join(&file.path);
-                                std::fs::create_dir(dest)?;
-                            } else {
-                                let mut desired_file = std::fs::File::create(mods_directory.join(file.path))?;
+                                if !dest.exists() {
+                                    std::fs::create_dir(dest)?;
+                                } else {
+                                    return Err("Mod already exists".into());
+                                }
+                            }
+                        }
+
+                        for file in &files {
+                            if !file.is_directory {
+                                let mut desired_file = std::fs::File::create(mods_directory.join(&file.path))?;
                                 desired_file.write_all(&file.data)?;
                             }
                         }

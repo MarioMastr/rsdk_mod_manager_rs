@@ -26,7 +26,6 @@ pub struct RMM {
     game: RSDKInfo,
     manager: ManagerSettings,
     my_ip: Bind<(), String>,
-    uri_present: bool
 }
 
 impl RMM {
@@ -51,18 +50,14 @@ impl RMM {
 impl eframe::App for RMM {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.plugin_or_default::<egui_async::EguiAsyncPlugin>();
-
-        let args: Vec<String> = std::env::args().collect();
-        if args.len() == 2 && args[1].contains("://") {
-            self.uri_present = true;
-        }
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
-            if self.uri_present {
+            let uri_opt = sysuri::parse_args();
+            if uri_opt.is_some() {
                 if let Some(res) = self.my_ip.read_or_request(|| async {
-                    let args: Vec<String> = std::env::args().collect();
-                    crate::core::web::gamebanana_uri_handler(&args[1]).await.map_err(|e| e.to_string())
+                    let uri = uri_opt.unwrap();
+                    crate::core::web::gamebanana_uri_handler(uri.as_str()).await.map_err(|e| e.to_string())
                 }) {
                     match res {
                         Ok(_)  => {

@@ -4,6 +4,6 @@ Comment=Manage mods for RSDK games
 Exec=$HOME/.cargo/bin/rsdk_mod_manager_rs %u
 Terminal=false
 Type=Application
-MimeType=x-scheme-handler/s1mm;x-scheme-handler/s2mm;x-scheme-handler/scdmm;x-scheme-handler/smmm;
+MimeType=x-scheme-handler/s1mm;x-scheme-handler/s2mm;x-scheme-handler/scdmm;x-scheme-handler/smmm;x-scheme-handler/s1fmm;x-scheme-handler/s2amm;
 Icon=rmm_icon
 Categories=Development;Utility;
