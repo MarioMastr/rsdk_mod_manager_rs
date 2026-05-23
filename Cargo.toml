@@ -17,3 +17,13 @@ reqwest = { version = "0.13.3", features = ["stream"] }
 tokio = { version = "1.52.3", features = ["full"] }
 futures-util = "0.3.32"
 egui-async = "0.4.1"
+sysuri = "0.4.0"
+
+[package.metadata.bundle]
+name = "RSDK Mod Manager"
+identifier = "com.mariomastr.rsdk_mod_manager"
+icon = ["icons/icon.icns"]
+version = "0.1.0"
+copyright = "Copyright © 2026"
+linux_mime_types = ["s1mm", "s2mm", "scdmm", "smmm"]
+osx_url_schemes = ["s1mm", "s2mm", "scdmm", "smmm"]

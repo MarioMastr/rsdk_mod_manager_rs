@@ -24,9 +24,16 @@ impl ManagerSettings {
             return Ok(());
         }
 
+#[cfg(target_os = "macos")]
+        let extension = ".app";
+#[cfg(target_os = "windows")]
+        let extension = ".exe";
+#[cfg(target_os = "linux")]
+        let extension = "";
+
         if let Some(file) = DialogBuilder::file()
             .set_location(".")
-            .add_filter("RSDK Executables", [""])
+            .add_filter("RSDK Executables", [extension])
             .set_filename("RSDKv")
             .open_single_file()
             .show()
@@ -64,9 +71,16 @@ impl ManagerSettings {
     }
 
     pub fn create_entry(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+#[cfg(target_os = "macos")]
+        let extension = ".app";
+#[cfg(target_os = "windows")]
+        let extension = ".exe";
+#[cfg(target_os = "linux")]
+        let extension = "";
+
         if let Some(file) = DialogBuilder::file()
             .set_location(".")
-            .add_filter("RSDK Executables", [""])
+            .add_filter("RSDK Executables", [extension])
             .set_filename("RSDKv")
             .open_single_file()
             .show()
