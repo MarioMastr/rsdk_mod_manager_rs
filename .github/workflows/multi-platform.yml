@@ -46,7 +46,7 @@ jobs:
 
       - name: Build
         run: |
-          if [ ${{ runner.os }} == 'Windows']; then
+          if [ "$RUNNER_OS" = "Windows" ]; then
             cargo build --release --target ${{ matrix.config.target }}
           else
             cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
