@@ -51,14 +51,14 @@ jobs:
           args: --git https://github.com/burtonageo/cargo-bundle
 
       - name: Run cargo bundle
-        if: matrix.config.name != 'Windows'
+        if: runner.os != 'Windows'
         uses: actions-rs/cargo@v1
         with:
           command: bundle
           args: --release --target ${{ matrix.config.target }}
 
       - name: Run cargo build
-        if: matrix.config.name == 'Windows'
+        if: runner.os == 'Windows'
         uses: actions-rs/cargo@v1
         with:
           command: build
