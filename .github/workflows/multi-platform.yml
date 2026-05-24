@@ -44,25 +44,13 @@ jobs:
             override: true
             target: ${{ matrix.config.target }}
 
-      - name: Install cargo-bundle
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --git https://github.com/burtonageo/cargo-bundle
-
-      - name: Run cargo bundle
-        if: runner.os != 'Windows'
-        uses: actions-rs/cargo@v1
-        with:
-          command: bundle
-          args: --release --target ${{ matrix.config.target }}
-
-      - name: Run cargo build
-        if: runner.os == 'Windows'
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target ${{ matrix.config.target }}
+      - name: Build
+        run: |
+          if [ ${{ runner.os }} == 'Windows']; then
+            cargo build --release --target ${{ matrix.config.target }}
+          else
+            cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
