@@ -1,0 +1,58 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+
+name: Build RSDK Mod Manager
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - name: Windows
+          os: windows-latest
+          target: x86_64-pc-windows-msvc
+
+
+        - name: macOS arm64
+          os: macos-latest
+          target: aarch64-apple-darwin
+
+        - name: macOS x86_64
+          os: macos-latest
+          target: x86_64-apple-darwin
+
+        - name: Linux
+          os: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+            target: ${{ matrix.config.target }}
+
+      - name: Install cargo-bundle
+        uses: actions-rs/cargo@v1
+        with:
+          command: install --git https://github.com/burtonageo/cargo-bundle
+
+      - name: Run cargo bundle
+        uses: actions-rs/cargo@v1
+        with:
+          command: bundle --release --target ${{ matrix.config.target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+            name: RSDK Mod Manager Bundles
+            path: target/release/bundle

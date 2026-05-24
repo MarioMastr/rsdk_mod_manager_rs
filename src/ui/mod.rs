@@ -53,7 +53,7 @@ impl eframe::App for RMM {
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
-            let uri_opt = sysuri::parse_args();
+            let uri_opt = std::env::args().skip(1).find(|e| e.contains("://"));
             if uri_opt.is_some() {
                 if let Some(res) = self.my_ip.read_or_request(|| async {
                     let uri = uri_opt.unwrap();
