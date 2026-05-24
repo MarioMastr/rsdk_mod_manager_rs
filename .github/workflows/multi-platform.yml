@@ -15,7 +15,7 @@ jobs:
         - name: Windows
           os: windows-latest
           target: x86_64-pc-windows-msvc
-          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-pc-windows-msvc/release/rsdk_mod_manager_rs.exe"
+          path: "D:\a\rsdk_mod_manager_rs\rsdk_mod_manager_rs\target\release\rsdk_mod_manager_rs.exe"
 
         - name: macOS arm64
           os: macos-latest
