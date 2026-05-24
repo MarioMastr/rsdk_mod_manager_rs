@@ -44,12 +44,14 @@ jobs:
       - name: Install cargo-bundle
         uses: actions-rs/cargo@v1
         with:
-          command: install --git https://github.com/burtonageo/cargo-bundle
+          command: install
+          args: --git https://github.com/burtonageo/cargo-bundle
 
       - name: Run cargo bundle
         uses: actions-rs/cargo@v1
         with:
-          command: bundle --release --target ${{ matrix.config.target }}
+          command: bundle
+          args: --release --target ${{ matrix.config.target }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
