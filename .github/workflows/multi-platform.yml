@@ -15,19 +15,22 @@ jobs:
         - name: Windows
           os: windows-latest
           target: x86_64-pc-windows-msvc
-
+          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-pc-windows-msvc/release/rsdk_mod_manager_rs.exe"
 
         - name: macOS arm64
           os: macos-latest
           target: aarch64-apple-darwin
+          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/aarch64-apple-darwin/release/bundle/osx/RSDK Mod Manager.app"
 
         - name: macOS x86_64
           os: macos-latest
           target: x86_64-apple-darwin
+          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-apple-darwin/release/bundle/osx/RSDK Mod Manager.app"
 
         - name: Linux
           os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
+          path: "/home/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-unknown-linux-gnu/release/bundle/appimage/rsdk_mod_manager_rs_0.1.0_x86_64.AppImage"
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -48,13 +51,21 @@ jobs:
           args: --git https://github.com/burtonageo/cargo-bundle
 
       - name: Run cargo bundle
+        if: matrix.config.game != 'Windows'
         uses: actions-rs/cargo@v1
         with:
           command: bundle
+          args: --release --target ${{ matrix.config.target }}
+
+      - name: Run cargo build
+        if: matrix.config.game == 'Windows'
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
           args: --release --target ${{ matrix.config.target }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
             name: RSDK Mod Manager Bundles
-            path: target/release/bundle
+            path: ${{ matrix.config.path }}
