@@ -44,9 +44,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
-            cargo build --release --target ${{ matrix.config.target }}
+            CARGO_TARGET_DIR=./bin cargo build --release --target ${{ matrix.config.target }}
           else
-            cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
+            CARGO_TARGET_DIR=./bin cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
           fi
 
       - name: Upload artifacts
