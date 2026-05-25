@@ -15,22 +15,18 @@ jobs:
         - name: Windows
           os: windows-latest
           target: x86_64-pc-windows-msvc
-          path: "D:\a\rsdk_mod_manager_rs\rsdk_mod_manager_rs\target\release\rsdk_mod_manager_rs.exe"
 
         - name: macOS arm64
           os: macos-latest
           target: aarch64-apple-darwin
-          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/aarch64-apple-darwin/release/bundle/osx/RSDK Mod Manager.app"
 
         - name: macOS x86_64
           os: macos-latest
           target: x86_64-apple-darwin
-          path: "/Users/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-apple-darwin/release/bundle/osx/RSDK Mod Manager.app"
 
         - name: Linux
           os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
-          path: "/home/runner/work/rsdk_mod_manager_rs/rsdk_mod_manager_rs/target/x86_64-unknown-linux-gnu/release/bundle/appimage/rsdk_mod_manager_rs_0.1.0_x86_64.AppImage"
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -57,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
             name: RSDK Mod Manager ${{ matrix.config.name }}
-            path: ${{ matrix.config.path }}
+            path: ${{ github.workspace }}/bin
