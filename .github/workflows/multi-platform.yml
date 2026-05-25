@@ -13,24 +13,20 @@ jobs:
       matrix:
         config:
         - name: Windows
-          os: windows-latest
-          target: x86_64-pc-windows-msvc
-          path: rsdk_mod_manager_rs.exe
+          os: ubuntu-latest
+          target: x86_64-pc-windows-gnu
 
         - name: macOS arm64
           os: macos-latest
           target: aarch64-apple-darwin
-          path: bundle/osx
 
         - name: macOS x86_64
           os: macos-latest
           target: x86_64-apple-darwin
-          path: bundle/osx
 
         - name: Linux
           os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
-          path: bundle/appimage/
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -47,14 +43,14 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            CARGO_TARGET_DIR=${{ github.workspace }}/bin cargo build --release --target ${{ matrix.config.target }}
+          if [ ${{ matrix.config.target }} == "x86_64-pc-windows-gnu" ]; then
+            sudo apt-get install mingw-w64 && cargo build --release --target ${{ matrix.config.target }}
           else
-            CARGO_TARGET_DIR=${{ github.workspace }}/bin cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
+            cargo install --git https://github.com/burtonageo/cargo-bundle && cargo bundle --release --target ${{ matrix.config.target }}
           fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
             name: RSDK Mod Manager ${{ matrix.config.name }}
-            path: ${{ github.workspace }}/bin/release/${{ matrix.config.path }}
+            path: ${{ github.workspace }}/target/${{ matrix.config.target }}
