@@ -49,18 +49,32 @@ impl Options {
         let height = ui.available_height();
         
         StripBuilder::new(ui)
+            .size(Size::initial(50.0))
             .size(Size::remainder().at_most(height - 8.75))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
-                    if ui.button("Remove Current Game").clicked() {
-                        self.show_delete_box = true;
-                    }
                     ui.horizontal(|ui| {
                         ui.label("Nickname: ");
                         if ui.text_edit_singleline(&mut manager.games[manager.selected_game].nickname).lost_focus() {
                             manager.save_json().expect("Unable to save managerSettings.json");
                         }
                     });
+                    ui.horizontal(|ui| {
+                        if ui.button("Remove Current Game").clicked() {
+                            self.show_delete_box = true;
+                        }
+                        #[cfg(target_os = "windows")] {
+                            if ui.button("Install URL Handler").clicked() {
+
+                            }
+                        }
+                    });
+                });
+                strip.cell(|ui| {
+                    ui.label(egui::RichText::new("Updates").underline().strong());
+                    if ui.button("Check now").clicked() {
+
+                    }
                 });
             }
         );

@@ -183,7 +183,6 @@ impl Mods {
                         ui.label(format!("Description: {}", game.mods[index].description));
                     });
                 }
-                
             }
         );
 
