@@ -1,10 +1,8 @@
-use crate::core::rsdk::RSDKInfo;
-use crate::core::json::ManagerSettings;
-
-use std::fs::File;
-use std::io::Write;
+use crate::core::{rsdk::{RSDKInfo, Game}, json::ManagerSettings};
+use std::{fs::File, io::Write};
 
 use futures_util::StreamExt;
+use registry::{Hive, Security};
 
 pub enum GameBananaURIs {
     Sonic1,
@@ -13,7 +11,9 @@ pub enum GameBananaURIs {
     SonicMania,
 
     Sonic1Forever,
-    Sonic2Absolute
+    Sonic2Absolute,
+
+    None
 }
 
 impl GameBananaURIs {
@@ -25,6 +25,7 @@ impl GameBananaURIs {
             GameBananaURIs::SonicMania => "smmm:",
             GameBananaURIs::Sonic1Forever => "s1fmm:",
             GameBananaURIs::Sonic2Absolute => "s2amm:",
+            GameBananaURIs::None => "",
         }
     }
 }
@@ -67,4 +68,21 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn std::error:
     }
 
     Ok(())
+}
+
+pub fn windows_install_uri(game: GameBananaURIs) {
+    let uri_str = game.as_str();
+    let regkey = Hive::CurrentUser.open(format!("HKEY_CLASSES_ROOTf\\{uri_str}"), Security::Read)?;
+}
+
+pub fn get_uri(game: Game) -> GameBananaURIs {
+    match game {
+        Game::Sonic1 => GameBananaURIs::Sonic1,
+        Game::Sonic2 => GameBananaURIs::Sonic2,
+        Game::SonicCD => GameBananaURIs::SonicCD,
+        Game::SonicMania=> GameBananaURIs::SonicMania,
+        Game::Sonic1Forever=> GameBananaURIs::Sonic1Forever,
+        Game::Sonic2Absolute=> GameBananaURIs::Sonic2Absolute,
+        Game::None => GameBananaURIs::None,
+    }
 }

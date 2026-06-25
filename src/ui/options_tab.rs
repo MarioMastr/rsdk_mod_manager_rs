@@ -2,6 +2,9 @@ use eframe::egui::{self, UiKind};
 use egui_extras::{StripBuilder, Size};
 use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 
+#[cfg(target_os = "windows")]
+use crate::core::web;
+
 #[derive(PartialEq, Default)]
 pub struct Options {
     show_delete_box: bool
@@ -65,7 +68,8 @@ impl Options {
                         }
                         #[cfg(target_os = "windows")] {
                             if ui.button("Install URL Handler").clicked() {
-
+                                let uri = web::get_uri(game.game);
+                                web::windows_install_uri(uri);
                             }
                         }
                     });
@@ -73,7 +77,6 @@ impl Options {
                 strip.cell(|ui| {
                     ui.label(egui::RichText::new("Updates").underline().strong());
                     if ui.button("Check now").clicked() {
-
                     }
                 });
             }
