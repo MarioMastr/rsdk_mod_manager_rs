@@ -156,9 +156,9 @@ impl Mods {
         let height = ui.available_height();
 
         StripBuilder::new(ui)
-            .size(Size::remainder().at_most(height - 48.5))
+            .size(Size::remainder().at_least(height - 48.5))
             .size(Size::exact(5.0))
-            .size(Size::exact(5.0))
+            .size(Size::remainder().at_most(5.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::horizontal().show(ui, |ui| {

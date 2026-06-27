@@ -3652,6 +3652,7 @@ name = "rsdk_mod_manager_rs"
 version = "0.1.0"
 dependencies = [
  "archive",
+ "dirs",
  "eframe",
  "egui",
  "egui-async",

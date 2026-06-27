@@ -1,9 +1,11 @@
 pub mod mods_tab;
 pub mod options_tab;
 
+use std::error::Error;
+
 use native_dialog::DialogBuilder;
 
-use crate::core::{json::ManagerSettings, rsdk::{RSDKInfo, Game}};
+use crate::core::{json::{GameSettings, ManagerSettings}, rsdk::{Game, RSDKInfo}};
 use mods_tab::Mods;
 use options_tab::Options;
 
@@ -52,6 +54,14 @@ impl eframe::App for RMM {
         ctx.plugin_or_default::<egui_async::EguiAsyncPlugin>();
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let save_entry = |
+            game: GameSettings,
+            manager: &mut ManagerSettings
+        | -> Result<(), Box<dyn Error>> {
+            let _ = std::mem::replace(&mut manager.games[manager.selected_game], game);
+            manager.save_json()
+        };
+
         egui::CentralPanel::default().show_inside(ui, |ui| {
             let uri_opt = std::env::args().skip(1).find(|e| e.contains("://"));
             if uri_opt.is_some() {
@@ -62,7 +72,14 @@ impl eframe::App for RMM {
                     match res {
                         Ok(_)  => {
                             self.game.refresh(&self.manager);
-                            ui.label("Mod download completed")
+                            let mut timer = 3.0;
+                            let delta_time = ui.ctx().input(|i| i.unstable_dt);
+                            timer -= delta_time;
+                            ui.label(if timer != 0.0 {
+                                "Mod download completed"
+                            } else {
+                                ""
+                            })
                         },
                         Err(err) => ui.colored_label(egui::Color32::RED, err),
                     };
@@ -80,7 +97,7 @@ impl eframe::App for RMM {
                     let mut game_settings = manager.games[manager.selected_game].clone();
                     game_settings.name = game_name;
                     game_settings.nickname = format!("{:?}", game_name);
-                    game_settings.save_entry(manager).expect("Unable to save entry");
+                    save_entry(game_settings, manager).expect("Unable to save entry");
                     game.refresh(manager);
                 };
 
@@ -128,7 +145,7 @@ impl eframe::App for RMM {
                             let game = &mut self.game;
                             let mut game_settings = manager.games[manager.selected_game].clone();
                             game_settings.path = file;
-                            game_settings.save_entry(manager).expect("Unable to save entry");
+                            save_entry(game_settings, manager).expect("Unable to save entry");
                             game.refresh(manager);
                         }
                     }

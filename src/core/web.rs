@@ -2,6 +2,8 @@ use crate::core::{rsdk::{RSDKInfo, Game}, json::ManagerSettings};
 use std::{fs::File, io::Write};
 
 use futures_util::StreamExt;
+
+#[cfg(target_os = "windows")]
 use registry::{Hive, Security};
 
 pub enum GameBananaURIs {
@@ -70,6 +72,7 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+#[cfg(target_os = "windows")]
 pub fn windows_install_uri(game: GameBananaURIs) {
     let uri_str = game.as_str();
     let regkey = Hive::CurrentUser.open(format!("HKEY_CLASSES_ROOTf\\{uri_str}"), Security::Read)?;

@@ -53,7 +53,7 @@ impl Options {
         
         StripBuilder::new(ui)
             .size(Size::initial(50.0))
-            .size(Size::remainder().at_most(height - 8.75))
+            .size(Size::remainder().at_most(height - 72.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {

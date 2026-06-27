@@ -1,8 +1,15 @@
-use std::{fs::{self, File}, io::Write, path::{Path, PathBuf}};
+use std::{fs, path::PathBuf, error::Error};
 use serde::{Deserialize, Serialize};
 
 use crate::core::rsdk::Game;
 use native_dialog::DialogBuilder;
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct GameSettings {
+    pub nickname: String,
+    pub path: PathBuf,
+    pub name: Game,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ManagerSettings {
@@ -18,8 +25,16 @@ impl Default for ManagerSettings {
 }
 
 impl ManagerSettings {
-    pub fn create_json(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let settings_path = Path::new("managerSettings.json");
+    pub fn create_json(&mut self) -> Result<(), Box<dyn Error>> {
+        let os_config = dirs::config_dir().expect("Unable to get config directory");
+        let app_config = os_config.join("rmm");
+
+        if !app_config.exists() {
+            fs::create_dir_all(&app_config)?;
+        }
+
+        let settings_path = app_config.join("managerSettings.json");
+
         if settings_path.exists() {
             return Ok(());
         }
@@ -48,29 +63,27 @@ impl ManagerSettings {
             self.games.push(settings);
 
             let settings_string = serde_json::to_string_pretty(self)?;
-            let mut settings_file = File::create(settings_path)?;
-            settings_file.write_all(settings_string.as_bytes())?;
+            fs::write(settings_path, settings_string.as_bytes())?;
         }
 
         Ok(())
     }
 
-    pub fn read_json() -> Result<ManagerSettings, Box<dyn std::error::Error>> {
+    pub fn read_json() -> Result<ManagerSettings, Box<dyn Error>> {
         let mut result = ManagerSettings::default();
 
-        let settings_path = Path::new("managerSettings.json");
+        let config = dirs::config_dir().expect("Unable to get config directory");
+        let settings_path = config.join("rmm").join("managerSettings.json");
         if !settings_path.exists() {
             result.create_json()?;
         }
 
-        let settings_string = fs::read_to_string("managerSettings.json")?;
+        let settings_string = fs::read_to_string(settings_path)?;
 
-        let result: ManagerSettings = serde_json::from_str(settings_string.as_str())?;
-
-        Ok(result)
+        Ok(serde_json::from_str(settings_string.as_str())?)
     }
 
-    pub fn create_entry(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn create_entry(&mut self) -> Result<(), Box<dyn Error>> {
 #[cfg(target_os = "macos")]
         let extension = ".app";
 #[cfg(target_os = "windows")]
@@ -97,44 +110,22 @@ impl ManagerSettings {
             self.selected_game = self.num_games - 1;
         }
 
-        self.save_json()?;
-
-        Ok(())
+        self.save_json()
     }
 
-    pub fn remove_entry(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn remove_entry(&mut self) -> Result<(), Box<dyn Error>> {
         self.games.remove(self.selected_game);
 
         self.num_games -= 1;
         self.selected_game = 0;
 
-        self.save_json()?;
-
-        Ok(())
+        self.save_json()
     }
 
-    pub fn save_json(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save_json(&self) -> Result<(), Box<dyn Error>> {
         let settings_string = serde_json::to_string_pretty(self)?;
-        let mut settings_file = File::create("managerSettings.json")?;
-        settings_file.write_all(settings_string.as_bytes())?;
-
-        Ok(())
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct GameSettings {
-    pub nickname: String,
-    pub path: PathBuf,
-    pub name: Game,
-}
-
-impl GameSettings {
-    pub fn save_entry(&self, manager: &mut ManagerSettings) -> Result<(), Box<dyn std::error::Error>> {
-        let _ = std::mem::replace(&mut manager.games[manager.selected_game], self.clone());
-
-        manager.save_json()?;
-
-        Ok(())
+        let config = dirs::config_dir().expect("Unable to get config directory");
+        let settings_path = config.join("rmm").join("managerSettings.json");
+        Ok(fs::write(settings_path, settings_string.as_bytes())?)
     }
 }

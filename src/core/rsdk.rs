@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf, error, io};
 use ini::Ini;
 use native_dialog::DialogBuilder;
 use serde::{Deserialize, Serialize};
@@ -55,7 +55,7 @@ impl Default for RSDKInfo {
 }
 
 impl RSDKInfo {
-    pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn std::error::Error>> {
+    pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn error::Error>> {
         let mut result = RSDKInfo::default();
 
         let game_settings = &manager_settings.games[manager_settings.selected_game];
@@ -87,9 +87,14 @@ impl RSDKInfo {
         *self = RSDKInfo::get(manager_settings).expect("Unable to get information on selected game");
     }
 
-    pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn std::error::Error>> {
+    pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn error::Error>> {
         let mut result = Vec::<ModInfo>::new();
         let mods_path = self.path.join("mods");
+
+        if !mods_path.exists() {
+            return Ok(result);
+        }
+
         let mods_dir = mods_path.read_dir()?;
 
         let modconfig_ini_path = mods_path.join("modconfig.ini");
@@ -145,8 +150,12 @@ impl RSDKInfo {
         Ok(result)
     }
 
-    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let modconfig_ini_path = self.path.join("mods").join("modconfig.ini");
+    pub fn save(&self) -> Result<(), io::Error> {
+        let mods_path = self.path.join("mods");
+        if !mods_path.exists() {
+            return Ok(());
+        }
+        let modconfig_ini_path = mods_path.join("modconfig.ini");
 
         let mods_text = if self.rsdk_revision == 5 {
             "Mods"
@@ -170,16 +179,14 @@ impl RSDKInfo {
         let mut section = modconfig_ini_new.with_section(Some(mods_text));
 
         for mi in &self.mods {
-            section.set(&mi.id, if mi.enabled {
+            section.set(&mi.name, if mi.enabled {
                 enabled_text
             } else {
                 disabled_text
             });
         }
 
-        modconfig_ini_new.write_to_file(modconfig_ini_path)?;
-
-        Ok(())
+        modconfig_ini_new.write_to_file(modconfig_ini_path)
     }
 
     pub fn new_mod(
@@ -188,7 +195,7 @@ impl RSDKInfo {
         _name: Option<String>,
         _desc: Option<String>,
         _ver: Option<String>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         match method {
             NewMod::Archive => {
                 if let Some(archive) = DialogBuilder::file()
@@ -254,7 +261,7 @@ impl RSDKInfo {
         &mut self,
         code: &str,
         url: &str
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         let mut mod_game: Game = Game::None;
 
         if code == GameBananaURIs::Sonic1.as_str() {
@@ -311,18 +318,13 @@ impl RSDKInfo {
             }
         }
 
-        std::fs::remove_dir_all(temp_path)?;
-
-        Ok(())
+        Ok(std::fs::remove_dir_all(temp_path)?)
     }
 
-    pub fn remove_mod(&mut self, selected_mod: usize) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn remove_mod(&mut self, selected_mod: usize) -> Result<(), io::Error> {
         let mod_info = &self.mods[selected_mod];
-        let mods_directory = self.path.join("mods");
-        let dir_to_del = mods_directory.join(&mod_info.name);
+        let dir_to_del = self.path.join("mods").join(&mod_info.name);
 
-        std::fs::remove_dir_all(dir_to_del)?;
-
-        Ok(())
+        std::fs::remove_dir_all(dir_to_del)
     }
 }
