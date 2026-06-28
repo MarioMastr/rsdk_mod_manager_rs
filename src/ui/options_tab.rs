@@ -49,11 +49,11 @@ impl Options {
             );
         }
 
-        let height = ui.available_height();
+        // let height = ui.available_height();
         
         StripBuilder::new(ui)
             .size(Size::initial(50.0))
-            .size(Size::remainder().at_most(height - 72.0))
+            // .size(Size::remainder().at_most(height - 72.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
@@ -66,19 +66,19 @@ impl Options {
                         if ui.button("Remove Current Game").clicked() {
                             self.show_delete_box = true;
                         }
-                        #[cfg(target_os = "windows")] {
-                            if ui.button("Install URL Handler").clicked() {
-                                let uri = web::get_uri(game.game);
-                                web::windows_install_uri(uri);
-                            }
-                        }
+                        // #[cfg(target_os = "windows")] {
+                        //     if ui.button("Install URL Handler").clicked() {
+                        //         let uri = web::get_uri(game.game);
+                        //         web::windows_install_uri(uri);
+                        //     }
+                        // }
                     });
                 });
-                strip.cell(|ui| {
-                    ui.label(egui::RichText::new("Updates").underline().strong());
-                    if ui.button("Check now").clicked() {
-                    }
-                });
+                // strip.cell(|ui| {
+                //     ui.label(egui::RichText::new("Updates").underline().strong());
+                //     if ui.button("Check now").clicked() {
+                //     }
+                // });
             }
         );
 
