@@ -35,12 +35,6 @@ impl RMM {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut this = Self::default();
 
-        // only supported method of mac app is through bundle
-        #[cfg(target_os = "macos")] {
-            let res_folder = std::env::current_exe().unwrap().parent().unwrap().parent().unwrap().join("Resources");
-            std::env::set_current_dir(res_folder).unwrap();
-        }
-
         this.manager = ManagerSettings::read_json().expect("Unable to read/create managerSettings.json");
         this.game = RSDKInfo::get(&this.manager).expect("Unable to get information on selected game");
 
