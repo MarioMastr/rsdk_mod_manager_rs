@@ -3,15 +3,15 @@ name: Build & Release
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     tags:
       - "v*"
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   # ─────────────────────────────────────────────
-  # Linux — AppImage & .deb via cargo-bundle
+  # Linux — AppImage via cargo-bundle
   # ─────────────────────────────────────────────
   build-linux:
     name: Build (Linux)
@@ -54,7 +54,7 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-bundles
+          name: linux-bundle
           path: |
             target/release/bundle/appimage/*.AppImage
           if-no-files-found: error
