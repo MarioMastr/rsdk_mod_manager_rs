@@ -1,5 +1,5 @@
 use crate::core::{rsdk::{RSDKInfo, Game}, json::ManagerSettings};
-use std::{fs::File, io::Write};
+use std::{fs::File, io::Write, error::Error};
 
 use futures_util::StreamExt;
 
@@ -32,7 +32,7 @@ impl GameBananaURIs {
     }
 }
 
-pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn std::error::Error>>  {
+pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn Error>>  {
     let res = reqwest::get(url).await.or(Err(format!("Failed to GET from '{}'", &url)))?;
 
     let temp_path = std::env::current_dir()?.join("temp");
@@ -55,7 +55,7 @@ pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn std::
     Ok(())
 }
 
-pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn Error>> {
     if let Some(index) = uri.find("https") {
         let uri_split = uri.split_at(index);
         let uri_parts: Vec<&str> = uri_split.1.split(",").collect();
