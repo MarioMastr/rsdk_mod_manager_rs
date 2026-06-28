@@ -1,8 +1,9 @@
-use std::{io::Write, path::PathBuf, error, io};
+use std::{io::Write, path::PathBuf, error, io, process::ExitStatus};
 use ini::Ini;
 use native_dialog::DialogBuilder;
 use serde::{Deserialize, Serialize};
 use archive::{ArchiveExtractor, ArchiveFormat};
+use tokio::process::Command;
 
 use crate::core::json::ManagerSettings;
 use crate::core::web::{self, GameBananaURIs};
@@ -39,7 +40,7 @@ pub struct ModInfo {
     pub selected: bool
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct RSDKInfo {
     pub rsdk_revision: u8,
     pub game: Game,
@@ -326,5 +327,25 @@ impl RSDKInfo {
         let dir_to_del = self.path.join("mods").join(&mod_info.name);
 
         std::fs::remove_dir_all(dir_to_del)
+    }
+
+    pub async fn launch(&self) -> Result<ExitStatus, String> {
+        #[cfg(target_os = "macos")]
+            let extension = ".app";
+        #[cfg(target_os = "windows")]
+            let extension = ".exe";
+        #[cfg(target_os = "linux")]
+            let extension = "";
+
+        let game_path = self.name.to_owned() + extension;
+
+        #[cfg(target_os = "macos")]
+            let mut child = Command::new("open").arg("-a").arg(game_path).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
+        #[cfg(target_os = "windows")]
+            let mut child = Command::new("start").arg(game_path).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
+        #[cfg(target_os = "linux")]
+            let mut child = Command::new("./".to_owned() + game_path.as_str()).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
+
+        child.wait().await.map_err(|e| e.to_string())
     }
 }

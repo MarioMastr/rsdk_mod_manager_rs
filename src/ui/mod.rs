@@ -1,7 +1,7 @@
 pub mod mods_tab;
 pub mod options_tab;
 
-use std::error::Error;
+use std::{error::Error, process::ExitStatus};
 
 use native_dialog::DialogBuilder;
 
@@ -27,7 +27,8 @@ pub struct RMM {
     options: Options,
     game: RSDKInfo,
     manager: ManagerSettings,
-    my_ip: Bind<(), String>,
+    mod_bind: Bind<(), String>,
+    app_bind: Bind<ExitStatus, String>
 }
 
 impl RMM {
@@ -65,7 +66,7 @@ impl eframe::App for RMM {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             let uri_opt = std::env::args().skip(1).find(|e| e.contains("://"));
             if uri_opt.is_some() {
-                if let Some(res) = self.my_ip.read_or_request(|| async {
+                if let Some(res) = self.mod_bind.read_or_request(|| async {
                     let uri = uri_opt.unwrap();
                     crate::core::web::gamebanana_uri_handler(uri.as_str()).await.map_err(|e| e.to_string())
                 }) {
@@ -194,17 +195,21 @@ impl eframe::App for RMM {
                             if ui.button("Save & Play").clicked() {
                                 self.game.save().expect("Unable to save changes");
 
-#[cfg(target_os = "macos")]
-                                let program = "./".to_owned() + &self.game.name.to_owned() + ".app/Contents/MacOS/" + &self.game.name.to_owned();
-#[cfg(target_os = "windows")]
-                                let program = "./".to_owned() + &self.game.name + ".exe";
-#[cfg(target_os = "linux")]
-                                let program = "./".to_owned() + &self.game.name;
-
-                                std::process::Command::new(program)
-                                    .current_dir(&self.game.path)
-                                    .output()
-                                    .expect("Unable to launch game");
+                                let game = self.game.clone();
+                                if let Some(res) = self.app_bind.read_or_request(|| async move {
+                                    game.launch().await
+                                }) {
+                                    match res {
+                                        Ok(_)  => {
+                                            self.game.refresh(&self.manager);
+                                        },
+                                        Err(err) => {
+                                            ui.colored_label(egui::Color32::RED, err);
+                                        },
+                                    };
+                                } else {
+                                    ui.spinner();
+                                }
                             }
                             if ui.button("Save").clicked() {
                                 self.game.save().expect("Unable to save changes");
