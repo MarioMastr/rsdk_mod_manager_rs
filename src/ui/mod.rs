@@ -67,14 +67,7 @@ impl eframe::App for RMM {
                     match res {
                         Ok(_)  => {
                             self.game.refresh(&self.manager);
-                            let mut timer = 3.0;
-                            let delta_time = ui.ctx().input(|i| i.unstable_dt);
-                            timer -= delta_time;
-                            ui.label(if timer != 0.0 {
-                                "Mod download completed"
-                            } else {
-                                ""
-                            })
+                            ui.label("Mod download completed")
                         },
                         Err(err) => ui.colored_label(egui::Color32::RED, err),
                     };
