@@ -1,4 +1,4 @@
-use crate::core::{rsdk::{ModInfo, RSDKInfo, NewMod}, json::ManagerSettings};
+use crate::{core::{json::ManagerSettings, rsdk::{ModInfo, NewMod, RSDKInfo}}, ui::RMMError};
 use eframe::egui::{self, UiKind};
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
@@ -10,6 +10,8 @@ pub struct Mods {
     show_remove_window: bool,
     new_mod_option: NewMod
 }
+
+impl RMMError for Mods {}
 
 impl Mods {
     pub fn table_ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo) {
@@ -80,7 +82,9 @@ impl Mods {
                         self.show_new_scratch_window = true;
                     } else {
                         game.new_mod(self.new_mod_option, None, None, None).expect("Unable to add mod");
-                        game.refresh(manager);
+                        if let Err(res) = game.refresh(manager) {
+                            Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                        }
                     }
                 }
             }
@@ -100,12 +104,19 @@ impl Mods {
             .resizable(false)
             .open(&mut self.show_remove_window)
             .show(ui, |ui| {
-                ui.label(format!("Are you sure you want to remove {}?", game.mods[self.selected_mod_index.unwrap()].name));
-                ui.add_space(10.0);
-                if ui.button("YES").clicked() {
-                    game.remove_mod(self.selected_mod_index.unwrap()).expect("Unable to remove mod");
-                    game.refresh(manager);
-                    ui.close_kind(UiKind::Window);
+                if let Some(index) = self.selected_mod_index {
+                    ui.label(format!("Are you sure you want to remove {}?", game.mods[index].name));
+                    ui.add_space(10.0);
+                    if ui.button("YES").clicked() {
+                        if let Err(res) = game.remove_mod(index) {
+                            Mods::error_window(ui, "Unable to remove mod", &res, true);
+                        }
+                        if let Err(res) = game.refresh(manager) {
+                            Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                        }
+                        ui.close_kind(UiKind::Window);
+                        self.selected_mod_index = None;
+                    }
                 }
             }
         );
@@ -123,25 +134,27 @@ impl Mods {
                         mi.enabled = false;
                     });
                 }
-                if let Some(index) = self.selected_mod_index && len != 1 {
-                    if index != 0 {
-                        if ui.button("Move Up").clicked() {
-                            game.mods.swap(index, index - 1);
-                            self.selected_mod_index = Some(index - 1);
+                if let Some(index) = self.selected_mod_index {
+                    if len > 1 {
+                        if index != 0 {
+                            if ui.button("Move Up").clicked() {
+                                game.mods.swap(index, index - 1);
+                                self.selected_mod_index = Some(index - 1);
+                            }
+                            if ui.button("Move to Top").clicked() {
+                                game.mods.swap(index, 0);
+                                self.selected_mod_index = Some(0);
+                            }
                         }
-                        if ui.button("Move to Top").clicked() {
-                            game.mods.swap(index, 0);
-                            self.selected_mod_index = Some(0);
-                        }
-                    }
-                    if index != (len - 1) {
-                        if ui.button("Move Down").clicked() {
-                            game.mods.swap(index, index + 1);
-                            self.selected_mod_index = Some(index + 1);
-                        }
-                        if ui.button("Move to Bottom").clicked() {
-                            game.mods.swap(index, len);
-                            self.selected_mod_index = Some(len - 1);
+                        if index != (len - 1) {
+                            if ui.button("Move Down").clicked() {
+                                game.mods.swap(index, index + 1);
+                                self.selected_mod_index = Some(index + 1);
+                            }
+                            if ui.button("Move to Bottom").clicked() {
+                                game.mods.swap(index, len);
+                                self.selected_mod_index = Some(len - 1);
+                            }
                         }
                     }
                     if ui.button("Remove").clicked() {
@@ -167,8 +180,8 @@ impl Mods {
                 });
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
-                        if ui.button("Refresh").clicked() {
-                            game.refresh(manager);
+                        if ui.button("Refresh").clicked() && let Err(res) = game.refresh(manager) {
+                            Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                         }
 
                         ui.add_space(ui.available_width() - 34.0);

@@ -1,6 +1,6 @@
 use eframe::egui::{self, UiKind};
 use egui_extras::{StripBuilder, Size};
-use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
+use crate::{core::{json::ManagerSettings, rsdk::RSDKInfo}, ui::RMMError};
 
 #[cfg(target_os = "windows")]
 use crate::core::web;
@@ -9,6 +9,8 @@ use crate::core::web;
 pub struct Options {
     show_delete_box: bool
 }
+
+impl RMMError for Options {}
 
 impl Options {
     pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
@@ -38,7 +40,9 @@ impl Options {
                     ui.horizontal(|ui| {
                         if ui.button("Yes").clicked() {
                             manager.remove_entry().expect("Unable to remove entry");
-                            game.refresh(manager);
+                            if let Err(res) = game.refresh(manager) {
+                                Options::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                            }
                             ui.close_kind(UiKind::Window);
                         }
                         if ui.button("No").clicked() {

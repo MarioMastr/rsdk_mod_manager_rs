@@ -84,8 +84,10 @@ impl RSDKInfo {
         Ok(result)
     }
 
-    pub fn refresh(&mut self, manager_settings: &ManagerSettings) {
-        *self = RSDKInfo::get(manager_settings).expect("Unable to get information on selected game");
+    pub fn refresh(&mut self, manager_settings: &ManagerSettings) -> Result<(), Box<dyn error::Error>> {
+        *self = RSDKInfo::get(manager_settings)?;
+
+        Ok(())
     }
 
     pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn error::Error>> {

@@ -44,6 +44,8 @@ impl RMM {
     }
 }
 
+impl RMMError for RMM {}
+
 impl eframe::App for RMM {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.plugin_or_default::<egui_async::EguiAsyncPlugin>();
@@ -66,7 +68,9 @@ impl eframe::App for RMM {
                 }) {
                     match res {
                         Ok(_)  => {
-                            self.game.refresh(&self.manager);
+                            if let Err(res) = self.game.refresh(&self.manager) {
+                                RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                            }
                             ui.label("Mod download completed")
                         },
                         Err(err) => ui.colored_label(egui::Color32::RED, err),
@@ -86,7 +90,9 @@ impl eframe::App for RMM {
                     game_settings.name = game_name;
                     game_settings.nickname = format!("{:?}", game_name);
                     save_entry(game_settings, manager).expect("Unable to save entry");
-                    game.refresh(manager);
+                    if let Err(res) = game.refresh(manager) {
+                        RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                    }
                 };
 
                 egui::Window::new("Select Game")
@@ -134,7 +140,9 @@ impl eframe::App for RMM {
                             let mut game_settings = manager.games[manager.selected_game].clone();
                             game_settings.path = file;
                             save_entry(game_settings, manager).expect("Unable to save entry");
-                            game.refresh(manager);
+                            if let Err(res) = game.refresh(&self.manager) {
+                                RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                            }
                         }
                     }
                 );
@@ -169,13 +177,17 @@ impl eframe::App for RMM {
                                     for n in 0..self.manager.num_games {
                                         let settings = &self.manager.games[n];
                                         if ui.selectable_value(&mut self.manager.selected_game, n, &settings.nickname).changed() {
-                                            self.game.refresh(&self.manager);
+                                            if let Err(res) = self.game.refresh(&self.manager) {
+                                                RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                                            }
                                             self.manager.save_json().expect("Unable to save managerSettings.json");
                                         }
                                     }
                                     if ui.button("New Game").clicked() {
                                         self.manager.create_entry().expect("Unable to create entry");
-                                        self.game.refresh(&self.manager);
+                                        if let Err(res) = self.game.refresh(&self.manager) {
+                                            RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                                        }
                                     }
                                 }
                             );
@@ -188,7 +200,9 @@ impl eframe::App for RMM {
                                 }) {
                                     match res {
                                         Ok(_)  => {
-                                            self.game.refresh(&self.manager);
+                                            if let Err(res) = self.game.refresh(&self.manager) {
+                                                RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                                            }
                                         },
                                         Err(err) => {
                                             ui.colored_label(egui::Color32::RED, err);
@@ -207,4 +221,17 @@ impl eframe::App for RMM {
             );
         });
    }
+}
+
+
+pub trait RMMError {
+    fn error_window(ui: &egui::Ui, message: &str, error: &dyn std::error::Error, mut open: bool) {
+        egui::Window::new("ERROR")
+        .collapsible(false)
+        .resizable(false)
+        .open(&mut open)
+        .show(ui.ctx(), |ui| {
+            ui.colored_label(egui::Color32::RED, format!("{message}: {}", error));
+        });
+    }
 }
