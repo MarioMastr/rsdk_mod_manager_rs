@@ -3649,7 +3649,7 @@ dependencies = [
 
 [[package]]
 name = "rsdk_mod_manager_rs"
-version = "1.0.0-beta.1"
+version = "1.0.0"
 dependencies = [
  "archive",
  "dirs",
