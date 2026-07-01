@@ -135,7 +135,7 @@ impl Mods {
                     });
                 }
                 if let Some(index) = self.selected_mod_index {
-                    if len > 1 {
+                    if len != 1 {
                         if index != 0 {
                             if ui.button("Move Up").clicked() {
                                 game.mods.swap(index, index - 1);
