@@ -73,9 +73,11 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(target_os = "windows")]
-pub fn windows_install_uri(game: GameBananaURIs) {
+pub fn windows_install_uri(game: GameBananaURIs) -> Result<(), Box<dyn Error>> {
     let uri_str = game.as_str();
     let regkey = Hive::CurrentUser.open(format!("HKEY_CLASSES_ROOTf\\{uri_str}"), Security::Read)?;
+
+    Ok(())
 }
 
 pub fn get_uri(game: Game) -> GameBananaURIs {
