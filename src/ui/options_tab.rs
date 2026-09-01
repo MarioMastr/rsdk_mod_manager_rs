@@ -39,7 +39,9 @@ impl Options {
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
                         if ui.button("Yes").clicked() {
-                            manager.remove_entry().expect("Unable to remove entry");
+                            if let Err(res) = manager.remove_entry() {
+                                Options::error_window(ui, "Unable to remove entry", res.as_ref(), true);
+                            }
                             if let Err(res) = game.refresh(manager) {
                                 Options::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                             }
@@ -62,8 +64,8 @@ impl Options {
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
                         ui.label("Nickname: ");
-                        if ui.text_edit_singleline(&mut manager.games[manager.selected_game].nickname).lost_focus() {
-                            manager.save_json().expect("Unable to save managerSettings.json");
+                        if ui.text_edit_singleline(&mut manager.games[manager.selected_game].nickname).lost_focus() && let Err(res) = manager.save_json() {
+                            Options::error_window(ui, "Unable to save managerSettings.json", res.as_ref(), true);
                         }
                     });
                     ui.horizontal(|ui| {

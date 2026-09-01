@@ -2,13 +2,17 @@ use crate::{core::{json::ManagerSettings, rsdk::{ModInfo, NewMod, RSDKInfo}}, ui
 use eframe::egui::{self, UiKind};
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
-#[derive(PartialEq, Default)]
+#[derive(PartialEq, Default, Clone)]
 pub struct Mods {
     selected_mod_index: Option<usize>,
     show_new_window: bool,
     show_new_scratch_window: bool,
     show_remove_window: bool,
-    new_mod_option: NewMod
+    new_mod_option: NewMod,
+    new_mod_name: String,
+    new_mod_author: String,
+    new_mod_version: String,
+    new_mod_description: String,
 }
 
 impl RMMError for Mods {}
@@ -81,7 +85,9 @@ impl Mods {
                     if self.new_mod_option == NewMod::Scratch {
                         self.show_new_scratch_window = true;
                     } else {
-                        game.new_mod(self.new_mod_option, None, None, None).expect("Unable to add mod");
+                        if let Err(res) = game.new_mod(self.new_mod_option, None, None, None, None) {
+                            Mods::error_window(ui, "Unable to add new mod", res.as_ref(), true);
+                        }
                         if let Err(res) = game.refresh(manager) {
                             Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                         }
@@ -90,12 +96,41 @@ impl Mods {
             }
         );
 
-        egui::Window::new("ERROR")
+        egui::Window::new("New Mod (Scratch)")
             .collapsible(false)
             .resizable(false)
-            .open(&mut self.show_new_scratch_window)
+            .open(&mut self.show_new_scratch_window.clone())
             .show(ui.ctx(), |ui| {
-                ui.label("Option not implemented yet; will come in future update.");
+
+                ui.horizontal(|ui| {
+                    ui.label("Name: ");
+                    ui.text_edit_singleline(&mut self.new_mod_name);
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Author: ");
+                    ui.text_edit_singleline(&mut self.new_mod_author);
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Version: ");
+                    ui.text_edit_singleline(&mut self.new_mod_version);
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Description (optional): ");
+                    ui.text_edit_singleline(&mut self.new_mod_description);
+                });
+
+                ui.add_space(10.0);
+
+                if ui.button("OK").clicked() {
+                    if let Err(res) = game.new_mod(self.new_mod_option, Some(self.new_mod_name.clone()), Some(self.new_mod_author.clone()), Some(self.new_mod_version.clone()), Some(self.new_mod_description.clone())) {
+                        Mods::error_window(ui, "Unable to add new mod", res.as_ref(), true);
+                    }
+                    if let Err(res) = game.refresh(manager) {
+                        Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                    }
+                    self.show_new_scratch_window = false;
+                    self.show_new_window = false;
+                }
             }
         );
 
@@ -109,7 +144,7 @@ impl Mods {
                     ui.add_space(10.0);
                     if ui.button("YES").clicked() {
                         if let Err(res) = game.remove_mod(index) {
-                            Mods::error_window(ui, "Unable to remove mod", &res, true);
+                            Mods::error_window(ui, "Unable to remove mod", res.as_ref(), true);
                         }
                         if let Err(res) = game.refresh(manager) {
                             Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);

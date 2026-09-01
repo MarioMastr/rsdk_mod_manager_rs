@@ -1,6 +1,6 @@
 [package]
 name = "rsdk_mod_manager_rs"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 description = "Manage mods for RSDK games"
 
@@ -27,7 +27,7 @@ registry = "1.3.0"
 name = "RSDK Mod Manager"
 identifier = "com.mariomastr.rsdk_mod_manager"
 icon = ["icons/icon.icns"]
-version = "1.0.0"
+version = "1.1.0"
 copyright = "Copyright © 2026"
 linux_mime_types = ["x-scheme-handler/s1mm", "x-scheme-handler/s2mm", "x-scheme-handler/scdmm", "x-scheme-handler/smmm"]
 linux_exec_args = "%u"

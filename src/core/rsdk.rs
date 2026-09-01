@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf, error, io, process::ExitStatus};
+use std::{io::Write, path::PathBuf, error::Error, process::ExitStatus};
 use ini::Ini;
 use native_dialog::DialogBuilder;
 use serde::{Deserialize, Serialize};
@@ -40,7 +40,7 @@ pub struct ModInfo {
     pub selected: bool
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Default)]
 pub struct RSDKInfo {
     pub rsdk_revision: u8,
     pub game: Game,
@@ -49,14 +49,8 @@ pub struct RSDKInfo {
     pub mods: Vec<ModInfo>,
 }
 
-impl Default for RSDKInfo {
-    fn default() -> Self {
-        Self { rsdk_revision: 4, game: Game::None, name: String::new(), path: PathBuf::new(), mods: Vec::<ModInfo>::new(), }
-    }
-}
-
 impl RSDKInfo {
-    pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn error::Error>> {
+    pub fn get(manager_settings: &ManagerSettings) -> Result<RSDKInfo, Box<dyn Error>> {
         let mut result = RSDKInfo::default();
 
         let game_settings = &manager_settings.games[manager_settings.selected_game];
@@ -84,13 +78,13 @@ impl RSDKInfo {
         Ok(result)
     }
 
-    pub fn refresh(&mut self, manager_settings: &ManagerSettings) -> Result<(), Box<dyn error::Error>> {
+    pub fn refresh(&mut self, manager_settings: &ManagerSettings) -> Result<(), Box<dyn Error>> {
         *self = RSDKInfo::get(manager_settings)?;
 
         Ok(())
     }
 
-    pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn error::Error>> {
+    pub fn get_mods(&self) -> Result<Vec<ModInfo>, Box<dyn Error>> {
         let mut result = Vec::<ModInfo>::new();
         let mods_path = self.path.join("mods");
 
@@ -153,7 +147,7 @@ impl RSDKInfo {
         Ok(result)
     }
 
-    pub fn save(&self) -> Result<(), io::Error> {
+    pub fn save(&self) -> Result<(), Box<dyn Error>> {
         let mods_path = self.path.join("mods");
         if !mods_path.exists() {
             return Ok(());
@@ -189,72 +183,94 @@ impl RSDKInfo {
             });
         }
 
-        modconfig_ini_new.write_to_file(modconfig_ini_path)
+        modconfig_ini_new.write_to_file(modconfig_ini_path).map_err(|e| e.into())
     }
 
     pub fn new_mod(
         &mut self,
         method: NewMod,
         _name: Option<String>,
-        _desc: Option<String>,
+        _author: Option<String>,
         _ver: Option<String>,
-    ) -> Result<(), Box<dyn error::Error>> {
+        _desc: Option<String>,
+    ) -> Result<(), Box<dyn Error>> {
         match method {
             NewMod::Archive => {
                 if let Some(archive) = DialogBuilder::file()
                     .set_location(".")
                     .add_filter("Mod Archives", ["zip", "7z"])
                     .open_single_file()
-                    .show()
-                    .expect("Unable to open file selector") {
-                        let mut format = ArchiveFormat::Zip;
-                        let extension = archive.extension().unwrap();
-                        if extension == "zip" {
-                            format = ArchiveFormat::Zip;
-                        } else if extension == "7z" {
-                            format = ArchiveFormat::SevenZ;
-                        }
+                    .show()?
+                {
+                    let mut format = ArchiveFormat::Zip;
+                    let extension = archive.extension().unwrap();
+                    if extension == "zip" {
+                        format = ArchiveFormat::Zip;
+                    } else if extension == "7z" {
+                        format = ArchiveFormat::SevenZ;
+                    }
 
-                        let data = std::fs::read(archive)?;
-                        let extractor = ArchiveExtractor::new();
-                        let files = extractor.extract(&data, format)?;
+                    let data = std::fs::read(archive)?;
+                    let extractor = ArchiveExtractor::new();
+                    let files = extractor.extract(&data, format)?;
 
-                        let mods_directory = self.path.join("mods");
+                    let mods_directory = self.path.join("mods");
 
-                        // we pass through twice, handling directories and then non-directories to prevent errors
-                        for file in &files {
-                            if file.is_directory {
-                                let dest = mods_directory.join(&file.path);
-                                if !dest.exists() {
-                                    std::fs::create_dir(dest)?;
-                                } else {
-                                    return Err("Mod already exists".into());
-                                }
+                    // we pass through twice, handling directories and then non-directories to prevent errors
+                    for file in &files {
+                        if file.is_directory {
+                            let dest = mods_directory.join(&file.path);
+                            if !dest.exists() {
+                                std::fs::create_dir(dest)?;
+                            } else {
+                                return Err("Mod already exists".into());
                             }
                         }
+                    }
 
-                        for file in &files {
-                            if !file.is_directory {
-                                let mut desired_file = std::fs::File::create(mods_directory.join(&file.path))?;
-                                desired_file.write_all(&file.data)?;
-                            }
+                    for file in &files {
+                        if !file.is_directory {
+                            let mut desired_file = std::fs::File::create(mods_directory.join(&file.path))?;
+                            desired_file.write_all(&file.data)?;
                         }
+                    }
                 }
             },
             NewMod::Folder => {
                 if let Some(folder) = DialogBuilder::file()
                     .set_location(".")
                     .open_single_dir()
-                    .show()
-                    .expect("Unable to open file selector") {
-                        let mods_directory = self.path.join("mods");
-                        if let Some(name) = folder.file_name() {
-                            let desired_mod_dir = mods_directory.join(name);
-                            std::fs::rename(folder, desired_mod_dir)?;
-                        }
+                    .show()?
+                {
+                    let mods_directory = self.path.join("mods");
+                    if let Some(name) = folder.file_name() {
+                        let desired_mod_dir = mods_directory.join(name);
+                        std::fs::rename(folder, desired_mod_dir)?;
+                    }
                 }
             },
-            NewMod::Scratch => {},
+            NewMod::Scratch => {
+                if let (Some(name), Some(author), Some(ver)) = (_name, _author, _ver) {
+                    let mods_directory = self.path.join("mods");
+                    let desired_mod_dir = mods_directory.join(&name);
+                    std::fs::create_dir(&desired_mod_dir)?;
+
+                    let mod_ini_path = desired_mod_dir.join("mod.ini");
+                    let mut mod_ini = Ini::new();
+                    let mut section = mod_ini.with_section(None::<String>);
+                    section.set("Name", &name);
+                    section.set("Author", &author);
+                    section.set("Version", &ver);
+
+                    if let Some(desc) = _desc && !desc.is_empty() {
+                        section.set("Description", &desc);
+                    }
+
+                    mod_ini.write_to_file(mod_ini_path)?;
+                } else {
+                    return Err("Missing required fields for new mod".into());
+                }
+            },
         }
 
         Ok(())
@@ -264,7 +280,7 @@ impl RSDKInfo {
         &mut self,
         code: &str,
         url: &str
-    ) -> Result<(), Box<dyn error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         let mut mod_game: Game = Game::None;
 
         if code == GameBananaURIs::Sonic1.as_str() {
@@ -321,14 +337,14 @@ impl RSDKInfo {
             }
         }
 
-        Ok(std::fs::remove_dir_all(temp_path)?)
+        std::fs::remove_dir_all(temp_path).map_err(|e| e.into())
     }
 
-    pub fn remove_mod(&mut self, selected_mod: usize) -> Result<(), io::Error> {
+    pub fn remove_mod(&mut self, selected_mod: usize) -> Result<(), Box<dyn Error>> {
         let mod_info = &self.mods[selected_mod];
         let dir_to_del = self.path.join("mods").join(&mod_info.name);
 
-        std::fs::remove_dir_all(dir_to_del)
+        std::fs::remove_dir_all(dir_to_del).map_err(|e| e.into())
     }
 
     pub async fn launch(&self) -> Result<ExitStatus, String> {

@@ -35,8 +35,8 @@ impl RMM {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut this = Self::default();
 
-        this.manager = ManagerSettings::read_json().expect("Unable to read/create managerSettings.json");
-        this.game = RSDKInfo::get(&this.manager).expect("Unable to get information on selected game");
+        this.manager = ManagerSettings::read_json().unwrap_or_else(|_| ManagerSettings::default());
+        this.game = RSDKInfo::get(&this.manager).unwrap_or_else(|_| RSDKInfo::default());
 
         cc.egui_ctx.options_mut(|a| a.theme_preference = egui::ThemePreference::System);
 
@@ -89,7 +89,9 @@ impl eframe::App for RMM {
                     let mut game_settings = manager.games[manager.selected_game].clone();
                     game_settings.name = game_name;
                     game_settings.nickname = format!("{:?}", game_name);
-                    save_entry(game_settings, manager).expect("Unable to save entry");
+                    if let Err(res) = save_entry(game_settings, manager) {
+                        Options::error_window(ui, "Unable to save entry", res.as_ref(), true);
+                    }
                     if let Err(res) = game.refresh(manager) {
                         RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                     }
@@ -139,7 +141,9 @@ impl eframe::App for RMM {
                             let game = &mut self.game;
                             let mut game_settings = manager.games[manager.selected_game].clone();
                             game_settings.path = file;
-                            save_entry(game_settings, manager).expect("Unable to save entry");
+                            if let Err(res) = save_entry(game_settings, manager) {
+                                Options::error_window(ui, "Unable to save entry", res.as_ref(), true);
+                            }
                             if let Err(res) = game.refresh(&self.manager) {
                                 RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                             }
@@ -180,11 +184,15 @@ impl eframe::App for RMM {
                                             if let Err(res) = self.game.refresh(&self.manager) {
                                                 RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                                             }
-                                            self.manager.save_json().expect("Unable to save managerSettings.json");
+                                            if let Err(res) = self.manager.save_json() {
+                                                Options::error_window(ui, "Unable to save managerSettings.json", res.as_ref(), true);
+                                            }
                                         }
                                     }
                                     if ui.button("New Game").clicked() {
-                                        self.manager.create_entry().expect("Unable to create entry");
+                                        if let Err(res) = self.manager.create_entry() {
+                                            Options::error_window(ui, "Unable to create entry", res.as_ref(), true);
+                                        }
                                         if let Err(res) = self.game.refresh(&self.manager) {
                                             RMM::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                                         }
@@ -192,7 +200,9 @@ impl eframe::App for RMM {
                                 }
                             );
                             if ui.button("Save & Play").clicked() {
-                                self.game.save().expect("Unable to save changes");
+                                if let Err(res) = self.game.save() {
+                                    Mods::error_window(ui, "Unable to save game", res.as_ref(), true);
+                                }
 
                                 let game = self.game.clone();
                                 if let Some(res) = self.app_bind.read_or_request(|| async move {
@@ -213,7 +223,9 @@ impl eframe::App for RMM {
                                 }
                             }
                             if ui.button("Save").clicked() {
-                                self.game.save().expect("Unable to save changes");
+                                if let Err(res) = self.game.save() {
+                                    Mods::error_window(ui, "Unable to save game", res.as_ref(), true);
+                                }
                             }
                         });
                     });
