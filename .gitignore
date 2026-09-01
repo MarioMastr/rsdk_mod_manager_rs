@@ -2,3 +2,4 @@
 .vscode/
 managerSettings.ini
 managerSettings.json
+Cargo.lock
