@@ -2,7 +2,7 @@ use crate::{core::{json::ManagerSettings, rsdk::{ModInfo, NewMod, RSDKInfo}}, ui
 use eframe::egui::{self, UiKind};
 use egui_extras::{TableBuilder, Column, StripBuilder, Size};
 
-#[derive(PartialEq, Default, Clone)]
+#[derive(PartialEq, Clone)]
 pub struct Mods {
     selected_mod_index: Option<usize>,
     show_new_window: bool,
@@ -13,6 +13,24 @@ pub struct Mods {
     new_mod_author: String,
     new_mod_version: String,
     new_mod_description: String,
+    mod_window_title: String,
+}
+
+impl Default for Mods {
+    fn default() -> Self {
+        Self {
+            selected_mod_index: None,
+            show_new_window: false,
+            show_new_scratch_window: false,
+            show_remove_window: false,
+            new_mod_option: NewMod::Archive,
+            new_mod_name: String::new(),
+            new_mod_author: String::new(),
+            new_mod_version: String::new(),
+            new_mod_description: String::new(),
+            mod_window_title: "New Mod".to_string(),
+        }
+    }
 }
 
 impl RMMError for Mods {}
@@ -70,66 +88,62 @@ impl Mods {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, game: &mut RSDKInfo, manager: &mut ManagerSettings) {
-        egui::Window::new("New Mod")
+        egui::Window::new(&self.mod_window_title)
+            .id(egui::Id::new("new_mod_window"))
             .collapsible(false)
             .resizable(false)
             .open(&mut self.show_new_window)
             .show(ui.ctx(), |ui| {
-                ui.label("Select option:");
-                ui.add_space(10.0);
-                ui.radio_value(&mut self.new_mod_option, NewMod::Archive, "From Archive");
-                ui.radio_value(&mut self.new_mod_option, NewMod::Folder, "From Folder");
-                ui.radio_value(&mut self.new_mod_option, NewMod::Scratch, "From Scratch (for developers)");
-                ui.add_space(10.0);
-                if ui.button("OK").clicked() {
-                    if self.new_mod_option == NewMod::Scratch {
-                        self.show_new_scratch_window = true;
-                    } else {
-                        if let Err(res) = game.new_mod(self.new_mod_option, None, None, None, None) {
+                if self.show_new_scratch_window {
+                    self.mod_window_title = "New Mod (Scratch)".to_string();
+                    ui.horizontal(|ui| {
+                        ui.label("Name: ");
+                        ui.text_edit_singleline(&mut self.new_mod_name);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Author: ");
+                        ui.text_edit_singleline(&mut self.new_mod_author);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Version: ");
+                        ui.text_edit_singleline(&mut self.new_mod_version);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Description (optional): ");
+                        ui.text_edit_singleline(&mut self.new_mod_description);
+                    });
+
+                    ui.add_space(10.0);
+
+                    if ui.button("OK").clicked() {
+                        if let Err(res) = game.new_mod(self.new_mod_option, Some(self.new_mod_name.clone()), Some(self.new_mod_author.clone()), Some(self.new_mod_version.clone()), Some(self.new_mod_description.clone())) {
                             Mods::error_window(ui, "Unable to add new mod", res.as_ref(), true);
                         }
                         if let Err(res) = game.refresh(manager) {
                             Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
                         }
+                        ui.close_kind(UiKind::Window);
                     }
-                }
-            }
-        );
-
-        egui::Window::new("New Mod (Scratch)")
-            .collapsible(false)
-            .resizable(false)
-            .open(&mut self.show_new_scratch_window.clone())
-            .show(ui.ctx(), |ui| {
-
-                ui.horizontal(|ui| {
-                    ui.label("Name: ");
-                    ui.text_edit_singleline(&mut self.new_mod_name);
-                });
-                ui.horizontal(|ui| {
-                    ui.label("Author: ");
-                    ui.text_edit_singleline(&mut self.new_mod_author);
-                });
-                ui.horizontal(|ui| {
-                    ui.label("Version: ");
-                    ui.text_edit_singleline(&mut self.new_mod_version);
-                });
-                ui.horizontal(|ui| {
-                    ui.label("Description (optional): ");
-                    ui.text_edit_singleline(&mut self.new_mod_description);
-                });
-
-                ui.add_space(10.0);
-
-                if ui.button("OK").clicked() {
-                    if let Err(res) = game.new_mod(self.new_mod_option, Some(self.new_mod_name.clone()), Some(self.new_mod_author.clone()), Some(self.new_mod_version.clone()), Some(self.new_mod_description.clone())) {
-                        Mods::error_window(ui, "Unable to add new mod", res.as_ref(), true);
+                } else {
+                    ui.label("Select option:");
+                    ui.add_space(10.0);
+                    ui.radio_value(&mut self.new_mod_option, NewMod::Archive, "From Archive");
+                    ui.radio_value(&mut self.new_mod_option, NewMod::Folder, "From Folder");
+                    ui.radio_value(&mut self.new_mod_option, NewMod::Scratch, "From Scratch (for developers)");
+                    ui.add_space(10.0);
+                    if ui.button("OK").clicked() {
+                        if self.new_mod_option == NewMod::Scratch {
+                            self.show_new_scratch_window = true;
+                        } else {
+                            if let Err(res) = game.new_mod(self.new_mod_option, None, None, None, None) {
+                                Mods::error_window(ui, "Unable to add new mod", res.as_ref(), true);
+                            }
+                            if let Err(res) = game.refresh(manager) {
+                                Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
+                            }
+                            ui.close_kind(UiKind::Window);
+                        }
                     }
-                    if let Err(res) = game.refresh(manager) {
-                        Mods::error_window(ui, "Unable to refresh game", res.as_ref(), true);
-                    }
-                    self.show_new_scratch_window = false;
-                    self.show_new_window = false;
                 }
             }
         );

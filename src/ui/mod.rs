@@ -223,8 +223,9 @@ impl eframe::App for RMM {
                                 }
                             }
                             if ui.button("Save").clicked() {
-                                if let Err(res) = self.game.save() {
-                                    Mods::error_window(ui, "Unable to save game", res.as_ref(), true);
+                                let res = self.game.save();
+                                if let Err(err) = res {
+                                    Mods::error_window(ui, "Unable to save game", err.as_ref(), true);
                                 }
                             }
                         });

@@ -2,8 +2,8 @@ use eframe::egui::{self, UiKind};
 use egui_extras::{StripBuilder, Size};
 use crate::{core::{json::ManagerSettings, rsdk::RSDKInfo}, ui::RMMError};
 
-// #[cfg(target_os = "windows")]
-// use crate::core::web;
+#[cfg(target_os = "windows")]
+use crate::core::web;
 
 #[derive(PartialEq, Default)]
 pub struct Options {
@@ -72,12 +72,14 @@ impl Options {
                         if ui.button("Remove Current Game").clicked() {
                             self.show_delete_box = true;
                         }
-                        // #[cfg(target_os = "windows")] {
-                        //     if ui.button("Install URL Handler").clicked() {
-                        //         let uri = web::get_uri(game.game);
-                        //         web::windows_install_uri(uri);
-                        //     }
-                        // }
+                        #[cfg(target_os = "windows")] {
+                            if ui.button("Install URL Handler").clicked() {
+                                let uri = web::get_uri(game.game);
+                                if let Err(res) = web::windows_install_uri(uri) {
+                                    Options::error_window(ui, "Unable to add uri", res.as_ref(), true);
+                                }
+                            }
+                        }
                     });
                 });
                 // strip.cell(|ui| {

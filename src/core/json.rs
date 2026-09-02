@@ -26,7 +26,7 @@ impl Default for ManagerSettings {
 
 impl ManagerSettings {
     pub fn create_json(&mut self) -> Result<(), Box<dyn Error>> {
-        let os_config = dirs::config_dir().ok_or_else(|| "Unable to get config directory")?;
+        let os_config = dirs::config_dir().ok_or("Unable to get config directory")?;
         let app_config = os_config.join("rmm");
 
         if !app_config.exists() {
@@ -71,7 +71,7 @@ impl ManagerSettings {
     pub fn read_json() -> Result<ManagerSettings, Box<dyn Error>> {
         let mut result = ManagerSettings::default();
 
-        let config = dirs::config_dir().ok_or_else(|| "Unable to get config directory")?;
+        let config = dirs::config_dir().ok_or("Unable to get config directory")?;
         let settings_path = config.join("rmm").join("managerSettings.json");
         if !settings_path.exists() {
             result.create_json()?;
@@ -122,7 +122,7 @@ impl ManagerSettings {
 
     pub fn save_json(&self) -> Result<(), Box<dyn Error>> {
         let settings_string = serde_json::to_string_pretty(self)?;
-        let config = dirs::config_dir().ok_or_else(|| "Unable to get config directory")?;
+        let config = dirs::config_dir().ok_or("Unable to get config directory")?;
         let settings_path = config.join("rmm").join("managerSettings.json");
         Ok(fs::write(settings_path, settings_string.as_bytes())?)
     }

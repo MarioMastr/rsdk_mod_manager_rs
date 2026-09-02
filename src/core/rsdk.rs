@@ -189,10 +189,10 @@ impl RSDKInfo {
     pub fn new_mod(
         &mut self,
         method: NewMod,
-        _name: Option<String>,
-        _author: Option<String>,
-        _ver: Option<String>,
-        _desc: Option<String>,
+        name: Option<String>,
+        author: Option<String>,
+        ver: Option<String>,
+        desc: Option<String>,
     ) -> Result<(), Box<dyn Error>> {
         match method {
             NewMod::Archive => {
@@ -250,7 +250,7 @@ impl RSDKInfo {
                 }
             },
             NewMod::Scratch => {
-                if let (Some(name), Some(author), Some(ver)) = (_name, _author, _ver) {
+                if let (Some(name), Some(author), Some(ver)) = (name, author, ver) {
                     let mods_directory = self.path.join("mods");
                     let desired_mod_dir = mods_directory.join(&name);
                     std::fs::create_dir(&desired_mod_dir)?;
@@ -262,8 +262,8 @@ impl RSDKInfo {
                     section.set("Author", &author);
                     section.set("Version", &ver);
 
-                    if let Some(desc) = _desc && !desc.is_empty() {
-                        section.set("Description", &desc);
+                    if let Some(description) = desc && !description.is_empty() {
+                        section.set("Description", &description);
                     }
 
                     mod_ini.write_to_file(mod_ini_path)?;

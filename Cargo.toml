@@ -5,23 +5,23 @@ edition = "2024"
 description = "Manage mods for RSDK games"
 
 [dependencies]
-env_logger = "0.11.8"
-eframe = "0.34.2"
-egui_extras = "0.34.2"
+env_logger = "0.11.11"
+eframe = "0.34.3"
+egui_extras = "0.34.3"
 rust-ini = "0.21.3"
-native-dialog = "0.9.6"
-egui = "0.34.2"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-archive = "0.3.0"
-reqwest = { version = "0.13.3", features = ["stream"] }
-tokio = { version = "1.52.3", features = ["full"] }
-futures-util = "0.3.32"
+native-dialog = "0.9.7"
+egui = "0.34.3"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+archive = "0.3.2"
+reqwest = { version = "0.13.4", features = ["stream"] }
+tokio = { version = "1.53.1", features = ["full"] }
+futures-util = "0.3.34"
 egui-async = "0.4.1"
 dirs = "6.0.0"
 
 [target.'cfg(windows)'.dependencies]
-registry = "1.3.0"
+windows-registry = "0.6.1"
 
 [package.metadata.bundle]
 name = "RSDK Mod Manager"
