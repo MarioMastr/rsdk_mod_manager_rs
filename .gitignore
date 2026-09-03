@@ -3,3 +3,4 @@
 managerSettings.ini
 managerSettings.json
 Cargo.lock
+dist/

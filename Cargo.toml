@@ -23,12 +23,14 @@ dirs = "6.0.0"
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6.1"
 
-[package.metadata.bundle]
-name = "RSDK Mod Manager"
-identifier = "com.mariomastr.rsdk_mod_manager"
-icon = ["icons/icon.icns"]
+[package.metadata.packager]
+product_name = "RSDK Mod Manager"
 version = "1.1.0"
-copyright = "Copyright © 2026"
-linux_mime_types = ["x-scheme-handler/s1mm", "x-scheme-handler/s2mm", "x-scheme-handler/scdmm", "x-scheme-handler/smmm"]
-linux_exec_args = "%u"
-osx_url_schemes = ["s1mm", "s2mm", "scdmm", "smmm"]
+binaries = [ { main = true, path = "rsdk_mod_manager_rs" } ]
+out-dir = "dist"
+identifier = "com.mariomastr.rsdk_mod_manager"
+before_packaging_command = "cargo build --release"
+formats = ["wix", "dmg", "appimage"]
+description = "Manage mods for RSDK games"
+icons = ["icons/icon-16x16.png", "icons/icon-24x24.png", "icons/icon-32x32.png", "icons/icon-48x48.png", "icons/icon-64x64.png", "icons/icon-128x128.png", "icons/icon-256x256.png", "icons/icon.ico", "icons/icon.icns"]
+deep_link_protocols = [{schemes = ["s1mm", "s2mm", "scdmm", "smmm"], name = "RSDK Mod Manager", role = "shell"}]

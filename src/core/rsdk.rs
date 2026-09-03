@@ -301,7 +301,10 @@ impl RSDKInfo {
             return Err("Game for mod does not match selected game".into());
         }
 
-        let temp_path = std::env::current_dir()?.join("temp");
+        let os_cache = dirs::cache_dir().ok_or("Unable to get cache directory")?;
+        let app_cache = os_cache.join("rmm");
+
+        let temp_path = app_cache.join("temp");
         let path = temp_path.join("mod.zip");
 
         web::download_handler(url, "mod.zip").await?;

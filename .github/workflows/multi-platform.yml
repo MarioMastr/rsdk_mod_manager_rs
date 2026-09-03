@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ─────────────────────────────────────────────
-  # Linux — AppImage via cargo-bundle
+  # Linux — AppImage via cargo-packager
   # ─────────────────────────────────────────────
   build-linux:
     name: Build (Linux)
@@ -42,22 +42,21 @@ jobs:
           key: linux-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: linux-cargo-
 
-      - name: Install cargo-bundle
-        run: cargo install cargo-bundle
+      - name: Install cargo-packager
+        run: cargo install cargo-packager
 
       - name: Bundle — AppImage
-        run: cargo bundle --release --format appimage
+        run: cargo packager --release
 
-      - name: Upload Linux artifacts
+      - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-bundle
-          path: |
-            target/release/bundle/appimage/*.AppImage
+          path: dist/*.AppImage
           if-no-files-found: error
 
   # ─────────────────────────────────────────────
-  # macOS — .app bundle via cargo-bundle
+  # macOS — .dmg via cargo-bundle
   # ─────────────────────────────────────────────
   build-macos:
     name: Build (macOS)
@@ -80,27 +79,21 @@ jobs:
           key: macos-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: macos-cargo-
 
-      - name: Install cargo-bundle
-        run: cargo install cargo-bundle
+      - name: Install cargo-packager
+        run: cargo install cargo-packager
 
-      - name: Bundle — .app
-        run: cargo bundle --release --format osx
-
-      - name: Compress .app for upload
-        run: |
-          cd target/release/bundle/osx
-          zip -r ../../../../app-macos.zip *.app
+      - name: Bundle — .dmg
+        run: cargo packager --release
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-bundle
-          path: app-macos.zip
+          path: dist/*.dmg
           if-no-files-found: error
 
   # ─────────────────────────────────────────────
-  # Windows — plain release binary
-  # (cargo-bundle Windows support is broken)
+  # Windows — .msi installer via cargo-packag3er
   # ─────────────────────────────────────────────
   build-windows:
     name: Build (Windows)
@@ -123,14 +116,17 @@ jobs:
           key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: windows-cargo-
 
-      - name: Build release binary
-        run: cargo build --release
+      - name: Install cargo-packager
+        run: cargo install cargo-packager
+
+      - name: Bundle — .dmg
+        run: cargo packager --release
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-binary
-          path: target/release/*.exe
+          name: windows-installer
+          path: dist/*.msi
           if-no-files-found: error
 
   # ─────────────────────────────────────────────

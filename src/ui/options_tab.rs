@@ -72,14 +72,14 @@ impl Options {
                         if ui.button("Remove Current Game").clicked() {
                             self.show_delete_box = true;
                         }
-                        #[cfg(target_os = "windows")] {
-                            if ui.button("Install URL Handler").clicked() {
-                                let uri = web::get_uri(game.game);
-                                if let Err(res) = web::windows_install_uri(uri) {
-                                    Options::error_window(ui, "Unable to add uri", res.as_ref(), true);
-                                }
-                            }
-                        }
+                        // #[cfg(target_os = "windows")] {
+                        //     if ui.button("Install URL Handler").clicked() {
+                        //         let uri = web::get_uri(game.game);
+                        //         if let Err(res) = web::windows_install_uri(uri) {
+                        //             Options::error_window(ui, "Unable to add uri", res.as_ref(), true);
+                        //         }
+                        //     }
+                        // }
                     });
                 });
                 // strip.cell(|ui| {

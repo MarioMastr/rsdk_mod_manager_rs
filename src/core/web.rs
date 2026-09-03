@@ -35,7 +35,13 @@ impl GameBananaURIs {
 pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn Error>>  {
     let res = reqwest::get(url).await.or(Err(format!("Failed to GET from '{}'", url)))?;
 
-    let temp_path = std::env::current_dir()?.join("temp");
+    let os_cache = dirs::cache_dir().ok_or("Unable to get cache directory")?;
+    let app_cache = os_cache.join("rmm");
+    if !app_cache.exists() {
+        std::fs::create_dir(&app_cache)?;
+    }
+
+    let temp_path = app_cache.join("temp");
     if !temp_path.exists() {
         std::fs::create_dir(&temp_path)?;
     }
@@ -72,19 +78,19 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
-pub fn windows_install_uri(game: GameBananaURIs) -> Result<(), Box<dyn Error>> {
-    let uri_str = game.as_str();
-
-    if CLASSES_ROOT.get_string(format!("{uri_str}\\shell\\open\\command")).is_err() {
-        let key = CLASSES_ROOT.create(format!("{uri_str}\\shell\\open\\command"))?;
-        key.set_string("", format!("\"{}\" \"%1\"", std::env::current_exe()?.display()))?;
-    } else {
-        return Err(format!("URI scheme '{}' is already registered.", uri_str).into());
-    }
-
-    Ok(())
-}
+// #[cfg(target_os = "windows")]
+// pub fn windows_install_uri(game: GameBananaURIs) -> Result<(), Box<dyn Error>> {
+//     let uri_str = game.as_str();
+//
+//     if CLASSES_ROOT.get_string(format!("{uri_str}\\shell\\open\\command")).is_err() {
+//         let key = CLASSES_ROOT.create(format!("{uri_str}\\shell\\open\\command"))?;
+//         key.set_string("", format!("\"{}\" \"%1\"", std::env::current_exe()?.display()))?;
+//     } else {
+//         return Err(format!("URI scheme '{}' is already registered.", uri_str).into());
+//     }
+//
+//     Ok(())
+// }
 
 pub fn get_uri(game: Game) -> GameBananaURIs {
     match game {
