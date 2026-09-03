@@ -82,7 +82,7 @@ jobs:
       - name: Install cargo-packager
         run: cargo install cargo-packager
 
-      - name: Bundle — .dmg
+      - name: Bundle — .msi
         run: cargo packager --release
 
       - name: Upload macOS artifact
