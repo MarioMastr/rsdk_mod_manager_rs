@@ -11,11 +11,9 @@ A WIP rewrite of the original RSDK Mod Manager from MainMemory into the all-enco
 
 ## Future features
 - OTA updates
-- *Maybe* a way to extract Origins audio from game files
 
 ## Known issues
 - One click handling:
-    - Windows users need to install the urls manually for now
     - macOS handling is currently not implemented as it's different from Windows and Linux and I ain't got time for that
 - Mod creation:
     - The success of whether an extracted mod is detected depends on the mod's structure, you will need to fix it manually
