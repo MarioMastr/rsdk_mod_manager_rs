@@ -3,9 +3,6 @@ use std::{fs::File, io::Write, error::Error};
 
 use futures_util::StreamExt;
 
-#[cfg(target_os = "windows")]
-use windows_registry::CLASSES_ROOT;
-
 pub enum GameBananaURIs {
     Sonic1,
     Sonic2,
@@ -77,20 +74,6 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
-// #[cfg(target_os = "windows")]
-// pub fn windows_install_uri(game: GameBananaURIs) -> Result<(), Box<dyn Error>> {
-//     let uri_str = game.as_str();
-//
-//     if CLASSES_ROOT.get_string(format!("{uri_str}\\shell\\open\\command")).is_err() {
-//         let key = CLASSES_ROOT.create(format!("{uri_str}\\shell\\open\\command"))?;
-//         key.set_string("", format!("\"{}\" \"%1\"", std::env::current_exe()?.display()))?;
-//     } else {
-//         return Err(format!("URI scheme '{}' is already registered.", uri_str).into());
-//     }
-//
-//     Ok(())
-// }
 
 pub fn get_uri(game: Game) -> GameBananaURIs {
     match game {

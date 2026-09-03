@@ -35,8 +35,8 @@ impl RMM {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut this = Self::default();
 
-        this.manager = ManagerSettings::read_json().unwrap_or_else(|_| ManagerSettings::default());
-        this.game = RSDKInfo::get(&this.manager).unwrap_or_else(|_| RSDKInfo::default());
+        this.manager = ManagerSettings::read_json().unwrap_or_default();
+        this.game = RSDKInfo::get(&this.manager).unwrap_or_default();
 
         cc.egui_ctx.options_mut(|a| a.theme_preference = egui::ThemePreference::System);
 
@@ -130,7 +130,6 @@ impl eframe::App for RMM {
                     .show(ui.ctx(), |ui| {
                         ui.label("Game executable not found. Please select another executable.");
                         if ui.button("OK").clicked() && let Some(file) = DialogBuilder::file()
-                            .set_location(".")
                             .add_filter("RSDK Executables", [""])
                             .set_filename("RSDKv")
                             .open_single_file()

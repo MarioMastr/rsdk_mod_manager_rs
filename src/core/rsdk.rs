@@ -197,7 +197,6 @@ impl RSDKInfo {
         match method {
             NewMod::Archive => {
                 if let Some(archive) = DialogBuilder::file()
-                    .set_location(".")
                     .add_filter("Mod Archives", ["zip", "7z"])
                     .open_single_file()
                     .show()?
@@ -238,7 +237,6 @@ impl RSDKInfo {
             },
             NewMod::Folder => {
                 if let Some(folder) = DialogBuilder::file()
-                    .set_location(".")
                     .open_single_dir()
                     .show()?
                 {
