@@ -1,12 +1,11 @@
-use std::{io::Write, path::PathBuf, error::Error, process::ExitStatus};
+use std::{error::Error, fs::File, io::Write, os::unix::fs::FileExt, path::PathBuf, process::ExitStatus, str::FromStr};
 use ini::Ini;
 use native_dialog::DialogBuilder;
 use serde::{Deserialize, Serialize};
 use archive::{ArchiveExtractor, ArchiveFormat};
 use tokio::process::Command;
 
-use crate::core::json::ManagerSettings;
-use crate::core::web::{self, GameBananaURIs};
+use crate::core::{json::ManagerSettings, web};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub enum Game {
@@ -47,6 +46,36 @@ pub struct RSDKInfo {
     pub name: String,
     pub path: PathBuf,
     pub mods: Vec<ModInfo>,
+}
+
+impl FromStr for Game {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Game, Self::Err> {
+        match input {
+            "s1mm:" => Ok(Game::Sonic1),
+            "s2mm:" => Ok(Game::Sonic2),
+            "scdmm:" => Ok(Game::SonicCD),
+            "smmm:" => Ok(Game::SonicMania),
+            "s1fmm:" => Ok(Game::Sonic1Forever),
+            "s2amm:" => Ok(Game::Sonic2Absolute),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Game {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Game::Sonic1 => "s1mm:",
+            Game::Sonic2 => "s2mm:",
+            Game::SonicCD => "scdmm:",
+            Game::SonicMania => "smmm:",
+            Game::Sonic1Forever => "s1fmm:",
+            Game::Sonic2Absolute => "s2amm:",
+            Game::None => "",
+        }
+    }
 }
 
 impl RSDKInfo {
@@ -279,21 +308,7 @@ impl RSDKInfo {
         code: &str,
         url: &str
     ) -> Result<(), Box<dyn Error>> {
-        let mut mod_game: Game = Game::None;
-
-        if code == GameBananaURIs::Sonic1.as_str() {
-            mod_game = Game::Sonic1;
-        } else if code == GameBananaURIs::Sonic2.as_str() {
-            mod_game = Game::Sonic2;
-        } else if code == GameBananaURIs::SonicCD.as_str(){
-            mod_game = Game::SonicCD;
-        } else if code == GameBananaURIs::SonicMania.as_str() {
-            mod_game = Game::SonicMania;
-        } else if code == GameBananaURIs::Sonic1Forever.as_str() {
-            mod_game = Game::Sonic1Forever;
-        } else if code == GameBananaURIs::Sonic2Absolute.as_str() {
-            mod_game = Game::Sonic2Absolute;
-        }
+        let mod_game = Game::from_str(code).map_err(|_| "Invalid game code for mod")?;
 
         if mod_game != self.game {
             return Err("Game for mod does not match selected game".into());

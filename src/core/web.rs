@@ -1,33 +1,8 @@
-use crate::core::{rsdk::{RSDKInfo, Game}, json::ManagerSettings};
+use crate::core::{rsdk::RSDKInfo, json::ManagerSettings};
 use std::{fs::File, io::Write, error::Error};
 
 use futures_util::StreamExt;
 
-pub enum GameBananaURIs {
-    Sonic1,
-    Sonic2,
-    SonicCD,
-    SonicMania,
-
-    Sonic1Forever,
-    Sonic2Absolute,
-
-    None
-}
-
-impl GameBananaURIs {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            GameBananaURIs::Sonic1 => "s1mm:",
-            GameBananaURIs::Sonic2 => "s2mm:",
-            GameBananaURIs::SonicCD => "scdmm:",
-            GameBananaURIs::SonicMania => "smmm:",
-            GameBananaURIs::Sonic1Forever => "s1fmm:",
-            GameBananaURIs::Sonic2Absolute => "s2amm:",
-            GameBananaURIs::None => "",
-        }
-    }
-}
 
 pub async fn download_handler(url: &str, name: &str) -> Result<(), Box<dyn Error>>  {
     let res = reqwest::get(url).await.or(Err(format!("Failed to GET from '{}'", url)))?;
@@ -73,16 +48,4 @@ pub async fn gamebanana_uri_handler(uri: &str) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-pub fn get_uri(game: Game) -> GameBananaURIs {
-    match game {
-        Game::Sonic1 => GameBananaURIs::Sonic1,
-        Game::Sonic2 => GameBananaURIs::Sonic2,
-        Game::SonicCD => GameBananaURIs::SonicCD,
-        Game::SonicMania=> GameBananaURIs::SonicMania,
-        Game::Sonic1Forever=> GameBananaURIs::Sonic1Forever,
-        Game::Sonic2Absolute=> GameBananaURIs::Sonic2Absolute,
-        Game::None => GameBananaURIs::None,
-    }
 }
