@@ -1,6 +1,6 @@
 [package]
 name = "rsdk_mod_manager_rs"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2024"
 description = "Manage mods for RSDK games"
 
@@ -25,7 +25,7 @@ windows-registry = "0.6.1"
 
 [package.metadata.packager]
 product_name = "RSDK Mod Manager"
-version = "1.1.0"
+version = "1.2.0"
 binaries = [ { main = true, path = "rsdk_mod_manager_rs" } ]
 out-dir = "dist"
 identifier = "com.mariomastr.rsdk_mod_manager"
