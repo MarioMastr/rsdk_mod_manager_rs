@@ -2,9 +2,6 @@ use eframe::egui::{self, UiKind};
 use egui_extras::{StripBuilder, Size};
 use crate::{core::{json::ManagerSettings, rsdk::RSDKInfo}, ui::RMMError};
 
-#[cfg(target_os = "windows")]
-use crate::core::web;
-
 #[derive(PartialEq, Default)]
 pub struct Options {
     show_delete_box: bool

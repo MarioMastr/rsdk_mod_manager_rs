@@ -35,8 +35,8 @@ impl RMM {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut this = Self::default();
 
-        this.manager = ManagerSettings::read_json().unwrap_or_default();
-        this.game = RSDKInfo::get(&this.manager).unwrap_or_default();
+        this.manager = ManagerSettings::read_json().unwrap();
+        this.game = RSDKInfo::get(&this.manager).unwrap();
 
         cc.egui_ctx.options_mut(|a| a.theme_preference = egui::ThemePreference::System);
 
