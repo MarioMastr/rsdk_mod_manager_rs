@@ -92,19 +92,55 @@ impl RSDKInfo {
 
         if let Some(rsdk_name) = game_settings.path.file_prefix() && let Some(rsdk_name_str) = rsdk_name.to_str() {
             result.name = rsdk_name_str.to_string();
-            match rsdk_name_str {
-                "RSDKv3" => result.rsdk_revision = 3,
-                "RSDKv4" => result.rsdk_revision = 4,
-                "RSDKv5" => result.rsdk_revision = 5,
-                "RSDKv5U" => result.rsdk_revision = 5,
-
-                _ => {}
-            };
         }
 
+        result.rsdk_revision = result.get_version()?;
         result.mods = result.get_mods()?;
 
         Ok(result)
+    }
+
+    pub fn read_size<T>(&self, file: &mut File, swap: bool, start: u64) -> Result<Vec<u8>, Box<dyn Error>> {
+        let mut buffer = vec![0; size_of::<T>()];
+        file.read_exact_at(&mut buffer, start)?;
+
+        if cfg!(target_endian = "big") || swap {
+            buffer.reverse();
+        }
+
+        Ok(buffer)
+    }
+
+    pub fn get_version(&self) -> Result<u8, Box<dyn Error>> {
+        let data_rsdk_path = self.path.join("Data.rsdk");
+        let data_folder_path = self.path.join("Data");
+
+        if data_rsdk_path.exists() {
+            let rsdk_data = std::fs::read(data_rsdk_path)?;
+
+            if rsdk_data[5] == 66 { // B in ASCII; RSDKvB = RSDKv4
+                return Ok(4);
+            } else {
+                return Ok(rsdk_data[5]);
+            }
+        } else if data_folder_path.exists() {
+            let game_config_path = data_folder_path.join("Game").join("GameConfig.bin");
+            let mut game_config_file = File::open(game_config_path)?;
+
+            let mut sig = self.read_size::<i32>(&mut game_config_file, false, 0)?;
+            if std::str::from_utf8(sig.as_slice())? == "CFG\0" {
+                return Ok(5);
+            } else {
+                sig = self.read_size::<i32>(&mut game_config_file, false, 9)?;
+                if std::str::from_utf8(sig.as_slice())? == "Data" {
+                    return Ok(3);
+                } else {
+                    return Ok(4);
+                }
+            }
+        }
+
+        Ok(4)
     }
 
     pub fn refresh(&mut self, manager_settings: &ManagerSettings) -> Result<(), Box<dyn Error>> {

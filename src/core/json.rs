@@ -38,16 +38,16 @@ impl ManagerSettings {
             return Ok(());
         }
 
-#[cfg(target_os = "macos")]
-        let extension = ".app";
-#[cfg(target_os = "windows")]
-        let extension = ".exe";
-#[cfg(target_os = "linux")]
-        let extension = "";
+        let mut extension = "";
+
+        if cfg!(target_os = "macos") {
+            extension = ".app";
+        } else if cfg!(target_os = "windows") {
+            extension = ".exe";
+        }
 
         if let Some(file) = DialogBuilder::file()
             .add_filter("RSDK Executables", [extension])
-            .set_filename("RSDKv")
             .open_single_file()
             .show()?
         {
@@ -86,16 +86,16 @@ impl ManagerSettings {
     }
 
     pub fn create_entry(&mut self) -> Result<(), Box<dyn Error>> {
-#[cfg(target_os = "macos")]
-        let extension = ".app";
-#[cfg(target_os = "windows")]
-        let extension = ".exe";
-#[cfg(target_os = "linux")]
-        let extension = "";
+        let mut extension = "";
+
+        if cfg!(target_os = "macos") {
+            extension = ".app";
+        } else if cfg!(target_os = "windows") {
+            extension = ".exe";
+        }
 
         if let Some(file) = DialogBuilder::file()
             .add_filter("RSDK Executables", [extension])
-            .set_filename("RSDKv")
             .open_single_file()
             .show()?
         {
