@@ -400,21 +400,35 @@ impl RSDKInfo {
     }
 
     pub async fn launch(&self) -> Result<ExitStatus, String> {
-        #[cfg(target_os = "macos")]
-            let extension = ".app";
-        #[cfg(target_os = "windows")]
-            let extension = ".exe";
-        #[cfg(target_os = "linux")]
-            let extension = "";
+        let mut extension = String::new();
 
-        let game_path = self.name.to_owned() + extension;
+        if cfg!(target_os = "macos") {
+            extension = String::from(".app");
+        } else if cfg!(target_os = "windows") {
+            extension = String::from(".exe");
+        } else if cfg!(target_os = "linux") {
+            extension = String::from("");
+        }
 
-        #[cfg(target_os = "macos")]
-            let mut child = Command::new("open").arg("-a").arg(game_path).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
-        #[cfg(target_os = "windows")]
-            let mut child = Command::new("start").arg(game_path).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
-        #[cfg(target_os = "linux")]
-            let mut child = Command::new("./".to_owned() + game_path.as_str()).current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
+        let game_path = format!("{}{}", self.name, extension);
+        let mut command = String::new();
+
+        if cfg!(target_os = "macos") {
+            command = String::from("open");
+        } else if cfg!(target_os = "windows") {
+            command = String::from("start");
+        } else if cfg!(target_os = "linux") {
+            command = format!("./{}", game_path);
+        }
+
+        let mut process = Command::new(command);
+        if cfg!(target_os = "macos") || cfg!(target_os = "windows") {
+            if cfg!(target_os = "macos") {
+                process.arg("-a");
+            }
+            process.arg(game_path);
+        }
+        let mut child = process.current_dir(&self.path).spawn().map_err(|e| e.to_string())?;
 
         child.wait().await.map_err(|e| e.to_string())
     }
