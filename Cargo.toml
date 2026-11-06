@@ -30,7 +30,7 @@ binaries = [ { main = true, path = "rsdk_mod_manager_rs" } ]
 out-dir = "dist"
 identifier = "com.mariomastr.rsdk_mod_manager"
 before_packaging_command = "cargo build --release"
-formats = ["wix", "dmg", "appimage"]
+formats = ["wix", "dmg", "appimage", "deb", "pacman"]
 description = "Manage mods for RSDK games"
 icons = ["icons/icon-16x16.png", "icons/icon-24x24.png", "icons/icon-32x32.png", "icons/icon-48x48.png", "icons/icon-64x64.png", "icons/icon-128x128.png", "icons/icon-256x256.png", "icons/icon.ico", "icons/icon.icns"]
 deep_link_protocols = [{schemes = ["s1mm", "s2mm", "scdmm", "smmm"], name = "RSDK Mod Manager", role = "shell"}]
