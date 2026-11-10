@@ -19,6 +19,7 @@ tokio = { version = "1.53.1", features = ["full"] }
 futures-util = "0.3.34"
 egui-async = "0.4.1"
 dirs = "6.0.0"
+opener = "0.9.0"
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6.1"

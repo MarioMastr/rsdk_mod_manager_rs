@@ -183,6 +183,11 @@ impl Mods {
                         mi.enabled = false;
                     });
                 }
+                if ui.button("Open Folder").clicked() {
+                    opener::open(&game.path).unwrap_or_else(|e| {
+                        Mods::error_window(ui, "Unable to open mods folder", &e, true);
+                    });
+                }
                 if let Some(index) = self.selected_mod_index {
                     if len != 1 {
                         if index != 0 {
