@@ -1,4 +1,4 @@
-use std::{error::Error, fs::File, io::Write, os::unix::fs::FileExt, path::PathBuf, process::ExitStatus, str::FromStr};
+use std::{error::Error, fs::File, io::{Read, Seek, SeekFrom, Write}, path::PathBuf, process::ExitStatus, str::FromStr};
 use ini::Ini;
 use native_dialog::DialogBuilder;
 use serde::{Deserialize, Serialize};
@@ -102,7 +102,8 @@ impl RSDKInfo {
 
     pub fn read_size<T>(&self, file: &mut File, swap: bool, start: u64) -> Result<Vec<u8>, Box<dyn Error>> {
         let mut buffer = vec![0; size_of::<T>()];
-        file.read_exact_at(&mut buffer, start)?;
+        file.seek(SeekFrom::Start(start))?;
+        file.read_exact(&mut buffer)?;
 
         if cfg!(target_endian = "big") || swap {
             buffer.reverse();
