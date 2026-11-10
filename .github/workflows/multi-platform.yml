@@ -45,7 +45,7 @@ jobs:
       - name: Install cargo-packager
         run: cargo install cargo-packager
 
-      - name: Bundle — AppImage
+      - name: Bundle — AppImage, .deb, .tar.gz
         run: cargo packager --release
 
       - name: Upload Linux artifact
