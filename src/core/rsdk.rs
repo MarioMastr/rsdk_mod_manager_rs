@@ -42,6 +42,7 @@ pub struct ModInfo {
 #[derive(PartialEq, Clone, Default)]
 pub struct RSDKInfo {
     pub rsdk_revision: u8,
+    pub extension: String,
     pub game: Game,
     pub name: String,
     pub path: PathBuf,
@@ -88,6 +89,10 @@ impl RSDKInfo {
 
         if let Some(parent) = game_settings.path.parent() {
             result.path = parent.to_path_buf();
+        }
+
+        if let Some(extension) = game_settings.path.extension() && let Some(extension_str) = extension.to_str() {
+            result.extension = extension_str.to_string();
         }
 
         if let Some(rsdk_name) = game_settings.path.file_prefix() && let Some(rsdk_name_str) = rsdk_name.to_str() {
@@ -401,17 +406,7 @@ impl RSDKInfo {
     }
 
     pub async fn launch(&self) -> Result<ExitStatus, String> {
-        let mut extension = String::new();
-
-        if cfg!(target_os = "macos") {
-            extension = String::from(".app");
-        } else if cfg!(target_os = "windows") {
-            extension = String::from(".exe");
-        } else if cfg!(target_os = "linux") {
-            extension = String::from("");
-        }
-
-        let game_path = format!("{}{}", self.name, extension);
+        let game_path = format!("{}.{}", self.name, self.extension);
         let mut command = String::new();
 
         if cfg!(target_os = "macos") {
