@@ -48,6 +48,9 @@ jobs:
       - name: Bundle — AppImage, .deb, .tar.gz
         run: cargo packager --release
 
+      - name: Compress Arch artifacts
+        run: zip dist/$(basename dist/*.tar.gz .tar.gz).zip dist/PKGBUILD dist/*.tar.gz
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -55,8 +58,7 @@ jobs:
           path: |
             dist/*.AppImage
             dist/*.deb
-            dist/*.tar.gz
-            dist/PKGBUILD
+            dist/*.zip
           if-no-files-found: error
 
   # ─────────────────────────────────────────────
